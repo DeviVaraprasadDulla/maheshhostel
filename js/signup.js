@@ -1,169 +1,518 @@
 // js/signup.js
-// Module version — uses apiFetch from js/api.js
 import { apiFetch } from "./api.js";
 
+/*
+  Signup script:
+  - live validation
+  - image preview (revoke URLs)
+  - uses user's compressImage(file, quality=0.7, maxWidth=900)
+  - compresses when original > 1MB, uses compressed blob if smaller
+  - submits FormData to /signup/ unchanged
+  - shows green toast + modal popup on success
+*/
+
 const form = document.getElementById("signupForm");
-const msg = document.getElementById("msg");
-const previewImage = document.getElementById("previewImage");
+const submitBtn = document.getElementById("submitBtn");
+const toast = document.getElementById("toast");
 const previewContainer = document.getElementById("previewContainer");
+const previewImage = document.getElementById("previewImage");
+const msg = document.getElementById("msg");
+const successModal = document.getElementById("successModal");
+const modalTitle = document.getElementById("modalTitle");
+const modalBody = document.getElementById("modalBody");
+const modalCloseBtn = document.getElementById("modalCloseBtn");
+const modalLoginBtn = document.getElementById("modalLoginBtn");
 
-// ------------- image preview -------------
-document.getElementById("student_image").addEventListener("change", (e) => {
-  const f = e.target.files[0];
-  if (f) {
-    previewContainer.style.display = "block";
-    previewImage.src = URL.createObjectURL(f);
+const MAX_FILE_BYTES = 10_485_760; // 10 MB - backend Cloudinary limit
+let currentPreviewUrl = null;
+
+// utilities
+const $ = (id) => document.getElementById(id);
+const sanitize = (s) => String(s || "").trim();
+const showToast = (text, ms = 4000, type = "error") => {
+  if (!toast) return;
+  toast.textContent = text;
+  toast.hidden = false;
+  toast.classList.remove("success", "error");
+  toast.classList.add(type === "success" ? "success" : "error");
+  setTimeout(() => {
+    toast.hidden = true;
+    toast.classList.remove("success", "error");
+  }, ms);
+};
+const setError = (id, text) => {
+  const el = $(`err_${id}`);
+  const input = $(id);
+  if (el) el.textContent = text || "";
+  if (input) {
+    if (text) input.classList.add("invalid");
+    else input.classList.remove("invalid");
   }
-});
+};
+const clearInlineMsg = () => {
+  if (msg) msg.innerHTML = "";
+};
 
-// ------------- image compression -------------
+// ------------------ User compressor (kept unchanged except tiny error guard) ------------------
 function compressImage(file, quality = 0.7, maxWidth = 900) {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-
-    reader.onload = (ev) => {
-      const img = new Image();
-      img.src = ev.target.result;
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        const scale = maxWidth / img.width;
-        canvas.width = img.width > maxWidth ? maxWidth : img.width;
-        canvas.height = img.width > maxWidth ? img.height * scale : img.height;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        canvas.toBlob((blob) => resolve(blob), "image/jpeg", quality);
+  return new Promise((resolve, reject) => {
+    try {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (ev) => {
+        const img = new Image();
+        img.src = ev.target.result;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const scale = maxWidth / img.width;
+          canvas.width = img.width > maxWidth ? maxWidth : img.width;
+          canvas.height =
+            img.width > maxWidth ? img.height * scale : img.height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob(
+            (blob) => {
+              if (blob) resolve(blob);
+              else reject(new Error("Compression failed (no blob)"));
+            },
+            "image/jpeg",
+            quality
+          );
+        };
+        img.onerror = (err) => reject(err);
       };
-    };
+      reader.onerror = (err) => reject(err);
+    } catch (e) {
+      reject(e);
+    }
   });
 }
+// -----------------------------------------------------------------------------------------------
 
-// ------------- helper show message -------------
-function showMsg(type, text) {
-  msg.innerHTML = `<div class="alert ${
-    type === "error" ? "error" : "success"
-  }">${text}</div>`;
+// ------------------ validation rules ------------------
+function isValidEmail(email) {
+  return /^\S+@\S+\.\S+$/.test(email);
+}
+function isValidPhone(phone) {
+  return /^\d{7,15}$/.test(phone);
+}
+function isValidET(et) {
+  return /^ET\d{4,8}$/i.test(et);
+}
+function isStrongPassword(pw) {
+  return /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).{8,}$/.test(pw);
+}
+function isValidMoney(v) {
+  return /^\d+(\.\d{1,2})?$/.test(String(v));
 }
 
-// ------------- submit handler -------------
+// ------------------ validators ------------------
+function validateFirstName() {
+  const v = sanitize($("first_name").value);
+  setError("first_name", v ? "" : "First name required.");
+  return !!v;
+}
+function validateLastName() {
+  const v = sanitize($("last_name").value);
+  setError("last_name", v ? "" : "Last name required.");
+  return !!v;
+}
+function validateEmail() {
+  const v = sanitize($("student_email").value);
+  if (!v) setError("student_email", "Email required.");
+  else if (!isValidEmail(v)) setError("student_email", "Enter valid email.");
+  else setError("student_email", "");
+  return isValidEmail(v);
+}
+function validateStudentPhone() {
+  const v = sanitize($("student_phone_number").value);
+  if (!v) setError("student_phone_number", "Phone required.");
+  else if (!isValidPhone(v))
+    setError("student_phone_number", "Digits only (7-15).");
+  else setError("student_phone_number", "");
+  return isValidPhone(v);
+}
+function validateET() {
+  const v = sanitize($("et_number").value);
+  if (!v) setError("et_number", "ET required.");
+  else if (!isValidET(v)) setError("et_number", "ET format like ET20250067.");
+  else setError("et_number", "");
+  return isValidET(v);
+}
+function validateFatherFirst() {
+  const v = sanitize($("father_first_name").value);
+  setError("father_first_name", v ? "" : "Father first name required.");
+  return !!v;
+}
+function validateFatherLast() {
+  const v = sanitize($("father_last_name").value);
+  setError("father_last_name", v ? "" : "Father last name required.");
+  return !!v;
+}
+function validateFatherPhone() {
+  const v = sanitize($("father_phone_number").value);
+  if (!v) setError("father_phone_number", "Phone required.");
+  else if (!isValidPhone(v))
+    setError("father_phone_number", "Digits only (7-15).");
+  else setError("father_phone_number", "");
+  return isValidPhone(v);
+}
+function validatePassword() {
+  const v = $("password").value || "";
+  if (!v) setError("password", "Password required.");
+  else if (!isStrongPassword(v)) setError("password", "Password too weak.");
+  else setError("password", "");
+  const bars = document.querySelectorAll("#pwStrength .bar");
+  if (bars && bars.length) {
+    const score =
+      (v.length >= 8) + /[A-Z]/.test(v) + /[a-z]/.test(v) + /\d/.test(v);
+    bars.forEach((b, i) => b.classList.toggle("active", i < score));
+  }
+  return isStrongPassword(v);
+}
+function validateConfirmPassword() {
+  const v = $("confirm_password").value || "";
+  const ok = v && v === $("password").value;
+  setError("confirm_password", ok ? "" : "Passwords do not match.");
+  return ok;
+}
+function validateRoomType() {
+  const v = sanitize($("room_type").value);
+  setError("room_type", v ? "" : "Room type required.");
+  return !!v;
+}
+function validateFees() {
+  const v = sanitize($("fees_paid").value);
+  if (!v) setError("fees_paid", "Fees required.");
+  else if (!isValidMoney(v))
+    setError("fees_paid", "Invalid number (max 2 decimals).");
+  else setError("fees_paid", "");
+  return isValidMoney(v);
+}
+function validatePending() {
+  const v = sanitize($("pending_fee").value);
+  if (!v) setError("pending_fee", "Pending required.");
+  else if (!isValidMoney(v))
+    setError("pending_fee", "Invalid number (max 2 decimals).");
+  else setError("pending_fee", "");
+  return isValidMoney(v);
+}
+function validateUTR() {
+  const v = sanitize($("utr_number").value);
+  setError("utr_number", v ? "" : "UTR required.");
+  return !!v;
+}
+function validateImage() {
+  const f = $("student_image").files[0];
+  if (!f) {
+    setError("student_image", "Please select an image.");
+    return false;
+  }
+  if (!f.type.startsWith("image/")) {
+    setError("student_image", "Select a valid image file.");
+    return false;
+  }
+  setError("student_image", "");
+  return true;
+}
+
+// wire inputs to live validation
+[
+  "first_name",
+  "last_name",
+  "student_email",
+  "student_phone_number",
+  "et_number",
+  "father_first_name",
+  "father_last_name",
+  "father_phone_number",
+  "password",
+  "confirm_password",
+  "room_type",
+  "fees_paid",
+  "pending_fee",
+  "utr_number",
+].forEach((id) => {
+  const el = $(id);
+  if (!el) return;
+  el.addEventListener("input", () => {
+    switch (id) {
+      case "first_name":
+        validateFirstName();
+        break;
+      case "last_name":
+        validateLastName();
+        break;
+      case "student_email":
+        validateEmail();
+        break;
+      case "student_phone_number":
+        validateStudentPhone();
+        break;
+      case "et_number":
+        validateET();
+        break;
+      case "father_first_name":
+        validateFatherFirst();
+        break;
+      case "father_last_name":
+        validateFatherLast();
+        break;
+      case "father_phone_number":
+        validateFatherPhone();
+        break;
+      case "password":
+        validatePassword();
+        validateConfirmPassword();
+        break;
+      case "confirm_password":
+        validateConfirmPassword();
+        break;
+      case "room_type":
+        validateRoomType();
+        break;
+      case "fees_paid":
+        validateFees();
+        break;
+      case "pending_fee":
+        validatePending();
+        break;
+      case "utr_number":
+        validateUTR();
+        break;
+    }
+    updateSubmitState();
+  });
+});
+
+// image preview & validation
+$("student_image").addEventListener("change", (e) => {
+  const f = e.target.files[0];
+  if (!f) {
+    previewContainer.style.display = "none";
+    updateSubmitState();
+    return;
+  }
+  if (!f.type.startsWith("image/")) {
+    setError("student_image", "Select an image file.");
+    showToast("Select an image file.");
+    e.target.value = "";
+    previewContainer.style.display = "none";
+    updateSubmitState();
+    return;
+  }
+  if (f.size > MAX_FILE_BYTES) {
+    // still allow — compressor will try to reduce; but warn user
+    showToast(
+      "Image is very large. We will attempt to compress it before upload.",
+      5000
+    );
+  }
+  if (currentPreviewUrl) {
+    URL.revokeObjectURL(currentPreviewUrl);
+    currentPreviewUrl = null;
+  }
+  currentPreviewUrl = URL.createObjectURL(f);
+  previewImage.src = currentPreviewUrl;
+  previewContainer.style.display = "block";
+  previewImage.onload = () => {
+    if (currentPreviewUrl) {
+      URL.revokeObjectURL(currentPreviewUrl);
+      currentPreviewUrl = null;
+    }
+  };
+  setError("student_image", "");
+  updateSubmitState();
+});
+
+// update submit state
+function updateSubmitState() {
+  const ok =
+    validateFirstName() &&
+    validateLastName() &&
+    validateEmail() &&
+    validateStudentPhone() &&
+    validateET() &&
+    validateFatherFirst() &&
+    validateFatherLast() &&
+    validateFatherPhone() &&
+    validatePassword() &&
+    validateConfirmPassword() &&
+    validateRoomType() &&
+    validateFees() &&
+    validatePending() &&
+    validateUTR() &&
+    validateImage();
+  submitBtn.disabled = !ok;
+}
+
+// modal helpers
+function openSuccessModal(title, bodyText, username) {
+  if (!successModal) return;
+  modalTitle.textContent = title || "Signup Submitted";
+  modalBody.innerHTML =
+    bodyText + (username ? `<br><strong>Username:</strong> ${username}` : "");
+  successModal.hidden = false;
+}
+function closeSuccessModal() {
+  if (!successModal) return;
+  successModal.hidden = true;
+}
+
+// wire modal buttons
+modalCloseBtn?.addEventListener("click", closeSuccessModal);
+modalLoginBtn?.addEventListener("click", () => {
+  window.location.href = "office-login.html";
+});
+
+// -------------- submit handler --------------
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
-  msg.innerHTML = "";
-
-  const btn = document.getElementById("submitBtn");
-  btn.disabled = true;
-  btn.textContent = "Submitting...";
-
-  // password validation
-  const pass = document.getElementById("password").value;
-  const cpass = document.getElementById("confirm_password").value;
-  if (pass !== cpass) {
-    showMsg("error", "Passwords do not match.");
-    btn.disabled = false;
-    btn.textContent = "Sign Up";
+  clearInlineMsg();
+  updateSubmitState();
+  if (submitBtn.disabled) {
+    showToast("Please fix validation errors before submitting.");
     return;
   }
 
-  // combine student name
-  const fname = document.getElementById("first_name").value.trim();
-  const mname = document.getElementById("middle_name").value.trim();
-  const lname = document.getElementById("last_name").value.trim();
-  let studentName = fname + " " + lname;
-  if (mname.length) studentName = `${fname} ${mname} ${lname}`;
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Submitting...";
 
-  // combine father name
-  const fatherFirst = document.getElementById("father_first_name").value.trim();
-  const fatherLast = document.getElementById("father_last_name").value.trim();
-  const fatherFullName = `${fatherFirst} ${fatherLast}`;
-
-  // username = et number (hidden to user)
-  const et = document.getElementById("et_number").value.trim();
+  // build fields
+  const fname = sanitize($("first_name").value);
+  const mname = sanitize($("middle_name")?.value);
+  const lname = sanitize($("last_name").value);
+  const studentName = mname
+    ? `${fname} ${mname} ${lname}`
+    : `${fname} ${lname}`;
+  const et = sanitize($("et_number").value);
   const username = et;
+  const fatherName = `${sanitize($("father_first_name").value)} ${sanitize(
+    $("father_last_name").value
+  )}`;
 
-  // build FormData
   const fd = new FormData();
-  const dataMap = {
-    username: username,
-    password: pass,
-    student_name: studentName,
-    student_email: document.getElementById("student_email").value.trim(),
-    student_phone_number: document
-      .getElementById("student_phone_number")
-      .value.trim(),
-    et_number: et,
-    father_name: fatherFullName,
-    father_phone_number: document
-      .getElementById("father_phone_number")
-      .value.trim(),
-    fees_paid: document.getElementById("fees_paid").value.trim(),
-    utr_number: document.getElementById("utr_number").value.trim(),
-    pending_fee: document.getElementById("pending_fee").value.trim(),
-    room_type: document.getElementById("room_type").value.trim(),
-    is_verified: false,
-  };
+  fd.append("username", username);
+  fd.append("password", $("password").value);
+  fd.append("student_name", studentName);
+  fd.append("student_email", sanitize($("student_email").value));
+  fd.append("student_phone_number", sanitize($("student_phone_number").value));
+  fd.append("et_number", et);
+  fd.append("father_name", fatherName);
+  fd.append("father_phone_number", sanitize($("father_phone_number").value));
+  fd.append("fees_paid", sanitize($("fees_paid").value));
+  fd.append("utr_number", sanitize($("utr_number").value));
+  fd.append("pending_fee", sanitize($("pending_fee").value));
+  fd.append("room_type", sanitize($("room_type").value));
+  fd.append("is_verified", "false");
 
-  for (const k in dataMap) {
-    fd.append(k, dataMap[k]);
-  }
-
-  // handle image compression
-  const originalFile = document.getElementById("student_image").files[0];
+  const originalFile = $("student_image").files[0];
   if (!originalFile) {
-    showMsg("error", "Please select a photo.");
-    btn.disabled = false;
-    btn.textContent = "Sign Up";
+    showToast("Please select a student photo.");
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Sign Up";
     return;
   }
 
-  let finalImage = originalFile;
-  // compress if larger than 1MB
-  if (originalFile.size > 1000000) {
-    try {
-      const compressed = await compressImage(originalFile, 0.7);
-      if (compressed && compressed.size) finalImage = compressed;
-    } catch (err) {
-      // if compression fails, continue with original (server will reject if too big)
-      console.warn("Compression failed, using original file", err);
+  // compress with user's compressor if > 1MB
+  try {
+    if (originalFile.size > 1_000_000) {
+      try {
+        const compressed = await compressImage(originalFile, 0.7, 900);
+        if (
+          compressed &&
+          compressed.size &&
+          compressed.size < originalFile.size
+        ) {
+          const origName = originalFile.name || "upload.jpg";
+          const nameNoExt = origName.replace(/\.[^/.]+$/, "");
+          const newName = `${nameNoExt}.jpg`;
+          fd.append("student_image", compressed, newName);
+          console.log(
+            "Image compressed:",
+            originalFile.size,
+            "->",
+            compressed.size
+          );
+        } else {
+          fd.append("student_image", originalFile, originalFile.name);
+          console.log(
+            "Compression not beneficial, sending original:",
+            originalFile.size
+          );
+        }
+      } catch (compErr) {
+        console.warn("Compression failed, sending original. Err:", compErr);
+        fd.append("student_image", originalFile, originalFile.name);
+      }
+    } else {
+      fd.append("student_image", originalFile, originalFile.name);
     }
+  } catch (err) {
+    fd.append("student_image", originalFile, originalFile.name);
   }
 
-  fd.append("student_image", finalImage, originalFile.name);
-
-  // ---- call API via apiFetch (api.js) ----
+  // API call (unchanged)
   try {
-    // signup is public — auth: false
     const data = await apiFetch("/signup/", {
       method: "POST",
       body: fd,
       auth: false,
     });
+    console.log("signup response:", data);
 
-    // success
-    msg.innerHTML = `
-      <div class="alert success">
-        Signup Successful!<br><br>
-        <b>Your Username:</b> ${username}<br><br>
-        Please wait for admin approval.<br><br>
-        <a href="office-login.html" style="font-weight:bold;color:#2563eb">Click here to Login</a>
-      </div>
-    `;
-    form.reset();
-    previewContainer.style.display = "none";
+    const msgText = (data && data.message) || "";
+    const ok =
+      typeof msgText === "string" &&
+      (msgText.toLowerCase().includes("signup successful") ||
+        msgText.toLowerCase().includes("success"));
+
+    if (ok) {
+      // success UI: green toast + modal
+      showToast(
+        "Signup successful! Waiting for admin approval.",
+        5000,
+        "success"
+      );
+      openSuccessModal(
+        "Signup Successful",
+        "Your registration is submitted. Please wait for admin approval.",
+        username
+      );
+
+      if (msg)
+        msg.innerHTML = `<div class="alert success">Signup submitted — check the popup for details.</div>`;
+      form.reset();
+      previewContainer.style.display = "none";
+      document
+        .querySelectorAll(".field-error")
+        .forEach((el) => (el.textContent = ""));
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Sign Up";
+    } else {
+      const info = msgText || JSON.stringify(data);
+      showToast(info || "Signup did not succeed. Please try again.");
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Sign Up";
+    }
   } catch (err) {
-    // err.data may be object, string, etc.
     const text = err?.data?.message || err?.data || err.message || "";
     if (typeof text === "string" && text.includes("already exists")) {
-      showMsg("error", "Email or Username already exists.");
+      showToast("Email or Username already exists.");
+      setError("student_email", "Email already exists.");
     } else if (
       typeof text === "string" &&
       text.includes("File size too large")
     ) {
-      showMsg("error", "Uploaded image is too large. Try a smaller image.");
+      showToast("Uploaded image too large. Try a smaller photo.");
+      setError("student_image", "File too large.");
     } else {
-      showMsg("error", text || "Signup failed.");
+      showToast(text || "Signup failed. Try again.");
     }
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "Sign Up";
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Sign Up";
   }
 });
+
+// initial state
+updateSubmitState();
