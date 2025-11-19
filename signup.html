@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Student Signup — Hostel ERP</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+
+  <body>
+    <main class="container">
+      <div class="card">
+        <div class="header">
+          <div class="brand">
+            <div class="logo">HE</div>
+            <div>Hostel ERP</div>
+          </div>
+          <div class="small">Student Signup</div>
+        </div>
+
+        <form id="signupForm" class="form" enctype="multipart/form-data">
+          <div id="msg"></div>
+
+          <!-- #################### STUDENT DETAILS #################### -->
+          <h2>Student Details</h2>
+
+          <div class="row">
+            <div class="col">
+              <div class="input-group">
+                <label for="first_name">First Name *</label>
+                <input id="first_name" type="text" required />
+              </div>
+
+              <div class="input-group">
+                <label for="middle_name">Middle Name (optional)</label>
+                <input id="middle_name" type="text" />
+              </div>
+
+              <div class="input-group">
+                <label for="last_name">Last Name *</label>
+                <input id="last_name" type="text" required />
+              </div>
+
+              <div class="input-group">
+                <label for="student_email">Student Email *</label>
+                <input id="student_email" type="email" required />
+              </div>
+
+              <div class="input-group">
+                <label for="student_phone_number">Student Phone Number *</label>
+                <input id="student_phone_number" type="text" required />
+              </div>
+
+              <div class="input-group">
+                <label for="et_number">ET Number *</label>
+                <input id="et_number" type="text" required />
+              </div>
+            </div>
+
+            <!-- #################### PARENT DETAILS #################### -->
+            <div class="col">
+              <h3>Parent Details</h3>
+
+              <div class="input-group">
+                <label for="father_first_name">Father First Name *</label>
+                <input id="father_first_name" type="text" required />
+              </div>
+
+              <div class="input-group">
+                <label for="father_last_name">Father Last Name *</label>
+                <input id="father_last_name" type="text" required />
+              </div>
+
+              <div class="input-group">
+                <label for="father_phone_number">Father Phone Number *</label>
+                <input id="father_phone_number" type="text" required />
+              </div>
+            </div>
+          </div>
+
+          <!-- #################### PASSWORD SECTION #################### -->
+
+          <h2 style="margin-top: 25px">Create Password</h2>
+
+          <div class="row">
+            <div class="col">
+              <div class="input-group">
+                <label for="password">Password *</label>
+                <input id="password" type="password" required />
+              </div>
+            </div>
+
+            <div class="col">
+              <div class="input-group">
+                <label for="confirm_password">Confirm Password *</label>
+                <input id="confirm_password" type="password" required />
+              </div>
+            </div>
+          </div>
+
+          <!-- #################### HOSTEL DETAILS #################### -->
+
+          <h2 style="margin-top: 25px">Hostel Details</h2>
+
+          <div class="row">
+            <div class="col">
+              <div class="input-group">
+                <label for="room_type">Room Type *</label>
+                <input
+                  id="room_type"
+                  type="text"
+                  placeholder="AC-2 Sharing"
+                  required
+                />
+              </div>
+
+              <div class="input-group">
+                <label for="fees_paid">Fees Paid *</label>
+                <input id="fees_paid" type="text" required />
+              </div>
+            </div>
+
+            <div class="col">
+              <div class="input-group">
+                <label for="pending_fee">Pending Fee *</label>
+                <input id="pending_fee" type="text" required />
+              </div>
+
+              <div class="input-group">
+                <label for="utr_number">UTR Number *</label>
+                <input id="utr_number" type="text" required />
+              </div>
+            </div>
+          </div>
+
+          <!-- #################### PHOTO #################### -->
+
+          <h2 style="margin-top: 25px">Upload Photo</h2>
+
+          <div class="input-group">
+            <label for="student_image">Student Photo *</label>
+            <input id="student_image" type="file" accept="image/*" required />
+          </div>
+
+          <div id="previewContainer" style="display: none; margin-top: 10px">
+            <img id="previewImage" style="width: 120px; border-radius: 10px" />
+          </div>
+
+          <div style="display: flex; gap: 10px; margin-top: 20px">
+            <button class="btn" id="submitBtn" type="submit">Sign Up</button>
+            <a href="index.html" class="btn secondary">Back</a>
+          </div>
+        </form>
+      </div>
+    </main>
+
+    <script type="module" src="js/signup.js"></script>
+  </body>
+</html>

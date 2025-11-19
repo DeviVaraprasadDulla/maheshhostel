@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Office Login — Hostel ERP</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="card">
+        <div class="header">
+          <div class="brand">
+            <div class="logo">HE</div>
+            <div>Hostel ERP</div>
+          </div>
+          <div class="small">Office Login</div>
+        </div>
+
+        <form id="officeLoginForm" class="form" novalidate>
+          <h2>Staff Login</h2>
+          <div id="msg"></div>
+          <div class="input-group">
+            <label for="username">Username</label>
+            <input id="username" name="username" type="text" required />
+          </div>
+          <div class="input-group">
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" required />
+          </div>
+
+          <div style="display: flex; gap: 10px; margin-top: 12px">
+            <button id="submitBtn" class="btn" type="submit">Sign in</button>
+            <a class="btn secondary" href="index.html">Back</a>
+          </div>
+
+          <div class="footer small">
+            Use staff credentials. Tokens will be saved to localStorage for
+            dashboard requests.
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/office-login.js"></script>
+  </body>
+</html>
