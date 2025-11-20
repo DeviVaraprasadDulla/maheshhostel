@@ -1,16 +1,8 @@
 // js/signup.js
+// Mobile-first signup logic with your compressor preserved
 import { apiFetch } from "./api.js";
 
-/*
-  Signup script:
-  - live validation
-  - image preview (revoke URLs)
-  - uses user's compressImage(file, quality=0.7, maxWidth=900)
-  - compresses when original > 1MB, uses compressed blob if smaller
-  - submits FormData to /signup/ unchanged
-  - shows green toast + modal popup on success
-*/
-
+/* Elements */
 const form = document.getElementById("signupForm");
 const submitBtn = document.getElementById("submitBtn");
 const toast = document.getElementById("toast");
@@ -23,10 +15,10 @@ const modalBody = document.getElementById("modalBody");
 const modalCloseBtn = document.getElementById("modalCloseBtn");
 const modalLoginBtn = document.getElementById("modalLoginBtn");
 
-const MAX_FILE_BYTES = 10_485_760; // 10 MB - backend Cloudinary limit
+const MAX_FILE_BYTES = 10_485_760; // 10 MB
 let currentPreviewUrl = null;
 
-// utilities
+/* helpers */
 const $ = (id) => document.getElementById(id);
 const sanitize = (s) => String(s || "").trim();
 const showToast = (text, ms = 4000, type = "error") => {
@@ -53,12 +45,13 @@ const clearInlineMsg = () => {
   if (msg) msg.innerHTML = "";
 };
 
-// ------------------ User compressor (kept unchanged except tiny error guard) ------------------
+/* --- your compressor (kept exactly, with small guard) --- */
 function compressImage(file, quality = 0.7, maxWidth = 900) {
   return new Promise((resolve, reject) => {
     try {
       const reader = new FileReader();
       reader.readAsDataURL(file);
+
       reader.onload = (ev) => {
         const img = new Image();
         img.src = ev.target.result;
@@ -87,9 +80,8 @@ function compressImage(file, quality = 0.7, maxWidth = 900) {
     }
   });
 }
-// -----------------------------------------------------------------------------------------------
 
-// ------------------ validation rules ------------------
+/* --- validation --- */
 function isValidEmail(email) {
   return /^\S+@\S+\.\S+$/.test(email);
 }
@@ -106,7 +98,6 @@ function isValidMoney(v) {
   return /^\d+(\.\d{1,2})?$/.test(String(v));
 }
 
-// ------------------ validators ------------------
 function validateFirstName() {
   const v = sanitize($("first_name").value);
   setError("first_name", v ? "" : "First name required.");
@@ -163,7 +154,7 @@ function validatePassword() {
   else if (!isStrongPassword(v)) setError("password", "Password too weak.");
   else setError("password", "");
   const bars = document.querySelectorAll("#pwStrength .bar");
-  if (bars && bars.length) {
+  if (bars) {
     const score =
       (v.length >= 8) + /[A-Z]/.test(v) + /[a-z]/.test(v) + /\d/.test(v);
     bars.forEach((b, i) => b.classList.toggle("active", i < score));
@@ -216,7 +207,7 @@ function validateImage() {
   return true;
 }
 
-// wire inputs to live validation
+/* wire inputs */
 [
   "first_name",
   "last_name",
@@ -285,7 +276,7 @@ function validateImage() {
   });
 });
 
-// image preview & validation
+/* preview + file change */
 $("student_image").addEventListener("change", (e) => {
   const f = e.target.files[0];
   if (!f) {
@@ -302,11 +293,7 @@ $("student_image").addEventListener("change", (e) => {
     return;
   }
   if (f.size > MAX_FILE_BYTES) {
-    // still allow — compressor will try to reduce; but warn user
-    showToast(
-      "Image is very large. We will attempt to compress it before upload.",
-      5000
-    );
+    showToast("Image is large — we'll try to compress before upload.", 4500);
   }
   if (currentPreviewUrl) {
     URL.revokeObjectURL(currentPreviewUrl);
@@ -325,7 +312,7 @@ $("student_image").addEventListener("change", (e) => {
   updateSubmitState();
 });
 
-// update submit state
+/* enable submit when valid */
 function updateSubmitState() {
   const ok =
     validateFirstName() &&
@@ -346,26 +333,36 @@ function updateSubmitState() {
   submitBtn.disabled = !ok;
 }
 
-// modal helpers
+/* modal helpers */
 function openSuccessModal(title, bodyText, username) {
   if (!successModal) return;
   modalTitle.textContent = title || "Signup Submitted";
   modalBody.innerHTML =
     bodyText + (username ? `<br><strong>Username:</strong> ${username}` : "");
   successModal.hidden = false;
+  // trap focus (simple)
+  modalCloseBtn.focus();
 }
 function closeSuccessModal() {
   if (!successModal) return;
   successModal.hidden = true;
 }
 
-// wire modal buttons
+/* overlay click closes modal */
+successModal?.addEventListener("click", (ev) => {
+  if (ev.target === successModal) closeSuccessModal();
+});
+/* ESC to close modal */
+document.addEventListener("keydown", (ev) => {
+  if (ev.key === "Escape" && successModal && !successModal.hidden)
+    closeSuccessModal();
+});
 modalCloseBtn?.addEventListener("click", closeSuccessModal);
 modalLoginBtn?.addEventListener("click", () => {
   window.location.href = "office-login.html";
 });
 
-// -------------- submit handler --------------
+/* submit handler (same API behaviour) */
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   clearInlineMsg();
@@ -378,7 +375,6 @@ form.addEventListener("submit", async (e) => {
   submitBtn.disabled = true;
   submitBtn.textContent = "Submitting...";
 
-  // build fields
   const fname = sanitize($("first_name").value);
   const mname = sanitize($("middle_name")?.value);
   const lname = sanitize($("last_name").value);
@@ -414,7 +410,7 @@ form.addEventListener("submit", async (e) => {
     return;
   }
 
-  // compress with user's compressor if > 1MB
+  // compress if > 1MB using the user's compressor
   try {
     if (originalFile.size > 1_000_000) {
       try {
@@ -426,8 +422,7 @@ form.addEventListener("submit", async (e) => {
         ) {
           const origName = originalFile.name || "upload.jpg";
           const nameNoExt = origName.replace(/\.[^/.]+$/, "");
-          const newName = `${nameNoExt}.jpg`;
-          fd.append("student_image", compressed, newName);
+          fd.append("student_image", compressed, `${nameNoExt}.jpg`);
           console.log(
             "Image compressed:",
             originalFile.size,
@@ -452,15 +447,12 @@ form.addEventListener("submit", async (e) => {
     fd.append("student_image", originalFile, originalFile.name);
   }
 
-  // API call (unchanged)
   try {
     const data = await apiFetch("/signup/", {
       method: "POST",
       body: fd,
       auth: false,
     });
-    console.log("signup response:", data);
-
     const msgText = (data && data.message) || "";
     const ok =
       typeof msgText === "string" &&
@@ -468,7 +460,6 @@ form.addEventListener("submit", async (e) => {
         msgText.toLowerCase().includes("success"));
 
     if (ok) {
-      // success UI: green toast + modal
       showToast(
         "Signup successful! Waiting for admin approval.",
         5000,
@@ -479,7 +470,6 @@ form.addEventListener("submit", async (e) => {
         "Your registration is submitted. Please wait for admin approval.",
         username
       );
-
       if (msg)
         msg.innerHTML = `<div class="alert success">Signup submitted — check the popup for details.</div>`;
       form.reset();
@@ -514,5 +504,5 @@ form.addEventListener("submit", async (e) => {
   }
 });
 
-// initial state
+/* initial state */
 updateSubmitState();

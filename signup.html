@@ -4,19 +4,20 @@
     <meta charset="utf-8" />
     <title>Student Signup — Hostel ERP</title>
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="css/root.css" />
+    <link rel="stylesheet" href="css/signup.css" />
   </head>
 
   <body>
     <main class="container">
       <div class="card">
-        <div class="header">
+        <header class="header">
           <div class="brand">
             <div class="logo">HE</div>
             <div class="brand-text">Hostel ERP</div>
           </div>
           <div class="small">Student Signup</div>
-        </div>
+        </header>
 
         <form
           id="signupForm"
@@ -29,210 +30,203 @@
           <!-- STUDENT DETAILS -->
           <h2>Student Details</h2>
 
-          <div class="row">
-            <div class="col">
-              <div class="input-group">
-                <label for="first_name">First Name *</label>
-                <input id="first_name" name="first_name" type="text" required />
-                <div class="field-error" id="err_first_name"></div>
-              </div>
-
-              <div class="input-group">
-                <label for="middle_name">Middle Name</label>
-                <input id="middle_name" name="middle_name" type="text" />
-                <div class="field-error" id="err_middle_name"></div>
-              </div>
-
-              <div class="input-group">
-                <label for="last_name">Last Name *</label>
-                <input id="last_name" name="last_name" type="text" required />
-                <div class="field-error" id="err_last_name"></div>
-              </div>
-
-              <div class="input-group">
-                <label for="student_email">Student Email *</label>
-                <input
-                  id="student_email"
-                  name="student_email"
-                  type="email"
-                  required
-                />
-                <div class="field-error" id="err_student_email"></div>
-              </div>
-
-              <div class="input-group">
-                <label for="student_phone_number">Student Phone Number *</label>
-                <input
-                  id="student_phone_number"
-                  name="student_phone_number"
-                  type="text"
-                  required
-                />
-                <div class="field-error" id="err_student_phone_number"></div>
-              </div>
-
-              <div class="input-group">
-                <label for="et_number">ET Number *</label>
-                <input
-                  id="et_number"
-                  name="et_number"
-                  type="text"
-                  placeholder="ET2025XXXX"
-                  required
-                />
-                <div class="field-error" id="err_et_number"></div>
-              </div>
+          <div class="stack">
+            <div class="input-group">
+              <label for="first_name">First Name *</label>
+              <input id="first_name" name="first_name" type="text" required />
+              <div class="field-error" id="err_first_name"></div>
             </div>
 
-            <!-- PARENT DETAILS -->
-            <div class="col">
-              <h3>Parent Details</h3>
+            <div class="input-group">
+              <label for="middle_name">Middle Name</label>
+              <input id="middle_name" name="middle_name" type="text" />
+              <div class="field-error" id="err_middle_name"></div>
+            </div>
 
-              <div class="input-group">
-                <label for="father_first_name">Father First Name *</label>
-                <input
-                  id="father_first_name"
-                  name="father_first_name"
-                  type="text"
-                  required
-                />
-                <div class="field-error" id="err_father_first_name"></div>
-              </div>
+            <div class="input-group">
+              <label for="last_name">Last Name *</label>
+              <input id="last_name" name="last_name" type="text" required />
+              <div class="field-error" id="err_last_name"></div>
+            </div>
 
-              <div class="input-group">
-                <label for="father_last_name">Father Last Name *</label>
-                <input
-                  id="father_last_name"
-                  name="father_last_name"
-                  type="text"
-                  required
-                />
-                <div class="field-error" id="err_father_last_name"></div>
-              </div>
+            <div class="input-group">
+              <label for="student_email">Student Email *</label>
+              <input
+                id="student_email"
+                name="student_email"
+                type="email"
+                inputmode="email"
+                required
+              />
+              <div class="field-error" id="err_student_email"></div>
+            </div>
 
-              <div class="input-group">
-                <label for="father_phone_number">Father Phone Number *</label>
-                <input
-                  id="father_phone_number"
-                  name="father_phone_number"
-                  type="text"
-                  required
-                />
-                <div class="field-error" id="err_father_phone_number"></div>
-              </div>
+            <div class="input-group">
+              <label for="student_phone_number">Student Phone Number *</label>
+              <input
+                id="student_phone_number"
+                name="student_phone_number"
+                type="tel"
+                inputmode="tel"
+                required
+              />
+              <div class="field-error" id="err_student_phone_number"></div>
+            </div>
+
+            <div class="input-group">
+              <label for="et_number">ET Number *</label>
+              <input
+                id="et_number"
+                name="et_number"
+                type="text"
+                placeholder="ET2025XXXX"
+                required
+              />
+              <div class="field-error" id="err_et_number"></div>
+            </div>
+          </div>
+
+          <!-- PARENT DETAILS -->
+          <h2 style="margin-top: 18px">Parent Details</h2>
+
+          <div class="stack">
+            <div class="input-group">
+              <label for="father_first_name">Father First Name *</label>
+              <input
+                id="father_first_name"
+                name="father_first_name"
+                type="text"
+                required
+              />
+              <div class="field-error" id="err_father_first_name"></div>
+            </div>
+
+            <div class="input-group">
+              <label for="father_last_name">Father Last Name *</label>
+              <input
+                id="father_last_name"
+                name="father_last_name"
+                type="text"
+                required
+              />
+              <div class="field-error" id="err_father_last_name"></div>
+            </div>
+
+            <div class="input-group">
+              <label for="father_phone_number">Father Phone Number *</label>
+              <input
+                id="father_phone_number"
+                name="father_phone_number"
+                type="tel"
+                inputmode="tel"
+                required
+              />
+              <div class="field-error" id="err_father_phone_number"></div>
             </div>
           </div>
 
           <!-- PASSWORD -->
-          <h2 style="margin-top: 20px">Create Password</h2>
+          <h2 style="margin-top: 18px">Create Password</h2>
 
-          <div class="row">
-            <div class="col">
-              <div class="input-group">
-                <label for="password">Password *</label>
-                <input id="password" name="password" type="password" required />
-                <div id="pwStrength" class="pw-strength">
-                  <div class="bar"></div>
-                  <div class="bar"></div>
-                  <div class="bar"></div>
-                  <div class="bar"></div>
-                </div>
-                <small class="hint"
-                  >Min 8 chars, uppercase, lowercase, number</small
-                >
-                <div class="field-error" id="err_password"></div>
+          <div class="stack">
+            <div class="input-group">
+              <label for="password">Password *</label>
+              <input id="password" name="password" type="password" required />
+              <div id="pwStrength" class="pw-strength" aria-hidden="true">
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
               </div>
+              <small class="hint"
+                >Min 8 chars, uppercase, lowercase, number</small
+              >
+              <div class="field-error" id="err_password"></div>
             </div>
 
-            <div class="col">
-              <div class="input-group">
-                <label for="confirm_password">Confirm Password *</label>
-                <input id="confirm_password" type="password" required />
-                <div class="field-error" id="err_confirm_password"></div>
-              </div>
+            <div class="input-group">
+              <label for="confirm_password">Confirm Password *</label>
+              <input id="confirm_password" type="password" required />
+              <div class="field-error" id="err_confirm_password"></div>
             </div>
           </div>
 
           <!-- HOSTEL DETAILS -->
-          <h2 style="margin-top: 20px">Hostel Details</h2>
+          <h2 style="margin-top: 18px">Hostel Details</h2>
 
-          <div class="row">
-            <div class="col">
-              <div class="input-group">
-                <label for="room_type">Room Type *</label>
-                <input
-                  id="room_type"
-                  name="room_type"
-                  type="text"
-                  placeholder="AC-2 Sharing"
-                  required
-                />
-                <div class="field-error" id="err_room_type"></div>
-              </div>
-
-              <div class="input-group">
-                <label for="fees_paid">Fees Paid *</label>
-                <input id="fees_paid" name="fees_paid" type="text" required />
-                <div class="field-error" id="err_fees_paid"></div>
-              </div>
+          <div class="stack">
+            <div class="input-group">
+              <label for="room_type">Room Type *</label>
+              <input
+                id="room_type"
+                name="room_type"
+                type="text"
+                placeholder="AC-2 Sharing"
+                required
+              />
+              <div class="field-error" id="err_room_type"></div>
             </div>
 
-            <div class="col">
-              <div class="input-group">
+            <div class="input-group small-row">
+              <div class="input-half">
+                <label for="fees_paid">Fees Paid *</label>
+                <input
+                  id="fees_paid"
+                  name="fees_paid"
+                  type="text"
+                  inputmode="decimal"
+                  required
+                />
+                <div class="field-error" id="err_fees_paid"></div>
+              </div>
+
+              <div class="input-half">
                 <label for="pending_fee">Pending Fee *</label>
                 <input
                   id="pending_fee"
                   name="pending_fee"
                   type="text"
+                  inputmode="decimal"
                   required
                 />
                 <div class="field-error" id="err_pending_fee"></div>
               </div>
+            </div>
 
-              <div class="input-group">
-                <label for="utr_number">UTR Number *</label>
-                <input id="utr_number" name="utr_number" type="text" required />
-                <div class="field-error" id="err_utr_number"></div>
-              </div>
+            <div class="input-group">
+              <label for="utr_number">UTR Number *</label>
+              <input id="utr_number" name="utr_number" type="text" required />
+              <div class="field-error" id="err_utr_number"></div>
             </div>
           </div>
 
           <!-- PHOTO -->
-          <h2 style="margin-top: 20px">Upload Photo</h2>
+          <h2 style="margin-top: 18px">Upload Photo</h2>
 
-          <div class="input-group">
-            <label for="student_image">Student Photo *</label>
-            <input
-              id="student_image"
-              name="student_image"
-              type="file"
-              accept="image/*"
-              required
-            />
-            <small class="hint">Max 10 MB. JPG/PNG recommended.</small>
-            <div class="field-error" id="err_student_image"></div>
-          </div>
+          <div class="stack">
+            <div class="input-group">
+              <label for="student_image">Student Photo *</label>
+              <input
+                id="student_image"
+                name="student_image"
+                type="file"
+                accept="image/*"
+                required
+              />
+              <small class="hint">Max 10 MB. JPG/PNG recommended.</small>
+              <div class="field-error" id="err_student_image"></div>
+            </div>
 
-          <div id="previewContainer" style="display: none; margin-top: 10px">
-            <img
-              id="previewImage"
-              style="width: 120px; border-radius: 10px"
-              alt="preview"
-            />
-          </div>
+            <div id="previewContainer" style="display: none; margin-top: 6px">
+              <img id="previewImage" alt="photo preview" />
+            </div>
 
-          <div
-            style="
-              display: flex;
-              gap: 10px;
-              margin-top: 20px;
-              align-items: center;
-            "
-          >
-            <button class="btn" id="submitBtn" type="submit" disabled>
-              Sign Up
-            </button>
-            <a href="index.html" class="btn secondary">Back</a>
+            <div class="row-actions">
+              <button class="btn" id="submitBtn" type="submit" disabled>
+                Sign Up
+              </button>
+              <a class="btn secondary" href="index.html">Back</a>
+            </div>
           </div>
         </form>
       </div>
@@ -243,8 +237,8 @@
 
     <!-- success modal -->
     <div id="successModal" class="modal" role="dialog" aria-modal="true" hidden>
-      <div class="modal-card">
-        <div class="modal-icon">✓</div>
+      <div class="modal-card" role="document">
+        <div class="modal-icon" aria-hidden="true">✓</div>
         <h3 id="modalTitle">Signup Submitted</h3>
         <p id="modalBody">Signup successful! Waiting for admin approval.</p>
         <div class="modal-actions">
