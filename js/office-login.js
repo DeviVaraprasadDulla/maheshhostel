@@ -1,13 +1,12 @@
-// js/office-login.js
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("officeLoginForm");
   const msg = document.getElementById("msg");
   const submit = document.getElementById("submitBtn");
 
   function showMessage(type, text) {
-    msg.innerHTML = `<div class="alert ${
-      type === "error" ? "error" : "success"
-    }">${text}</div>`;
+    // ❌ for error, ✅ for success
+    const icon = type === "error" ? "❌" : "✅";
+    msg.innerHTML = `<div class="alert ${type}">${icon} ${text}</div>`;
   }
 
   form.addEventListener("submit", async (e) => {
@@ -40,35 +39,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const text = await res.text();
       let data;
-      try {
-        data = text ? JSON.parse(text) : null;
-      } catch {
-        data = { message: text };
-      }
+      try { data = text ? JSON.parse(text) : null; } 
+      catch { data = { message: text }; }
 
       if (!res.ok) {
-        throw new Error(data?.message || "Login failed");
-      } 
-      console.group(res);
-
-      // backend returns { message, role, access, refresh }
-      const access = data.access;
-      const refresh = data.refresh;
-      const role = data.role;
-
-      if (!access) {
-        throw new Error("No access token received from server.");
+        // Handle 400 specifically as invalid credentials
+        if (res.status === 400) {
+          throw new Error("Invalid credentials. Please try again.");
+        } else {
+          throw new Error(data?.message || "Login failed");
+        }
       }
 
-      // Save tokens (simple)
-      localStorage.setItem("access_token", access);
-      if (refresh) localStorage.setItem("refresh_token", refresh);
-      if (role) localStorage.setItem("role", role);
+      // Success: save tokens
+      localStorage.setItem("access_token", data.access);
+      if (data.refresh) localStorage.setItem("refresh_token", data.refresh);
+      if (data.role) localStorage.setItem("role", data.role);
 
       showMessage("success", data.message || "Login successful");
-      setTimeout(() => (window.location.href = "office-dashboard.html"), 600);
+      setTimeout(() => window.location.href = "office-dashboard.html", 600);
+
     } catch (err) {
-      showMessage("error", err.message || "Login error");
+      showMessage("error", err.message);
     } finally {
       submit.disabled = false;
       submit.textContent = "Sign in";
