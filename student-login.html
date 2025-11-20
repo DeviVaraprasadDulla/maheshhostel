@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Student Login — Hostel ERP</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="css/root.css" />
+    <link rel="stylesheet" href="css/login.css" />
+  </head>
+
+  <body>
+    <main class="container">
+      <div class="card login-card" role="main" aria-labelledby="loginTitle">
+        <header class="header">
+          <div class="brand">
+            <div class="logo">HE</div>
+            <div class="brand-text">Hostel ERP</div>
+          </div>
+        </header>
+
+        <section class="login-wrap">
+          <h1 id="loginTitle" class="page-title">Student Login</h1>
+
+          <div id="msg" aria-live="polite"></div>
+
+          <form id="loginForm" class="form" autocomplete="on" novalidate>
+            <div class="input-group">
+              <label for="username">Username / ET Number</label>
+              <input
+                id="username"
+                name="username"
+                type="text"
+                inputmode="text"
+                autocomplete="username"
+                required
+              />
+              <div class="field-error" id="err_username"></div>
+            </div>
+
+            <div class="input-group">
+              <label for="password">Password</label>
+              <div style="position: relative">
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autocomplete="current-password"
+                  required
+                />
+                <button
+                  type="button"
+                  id="pwToggle"
+                  aria-label="Toggle password"
+                  title="Show password"
+                  style="
+                    position: absolute;
+                    right: 8px;
+                    top: 8px;
+                    background: transparent;
+                    border: none;
+                    color: var(--muted);
+                    cursor: pointer;
+                  "
+                >
+                  👁
+                </button>
+              </div>
+              <div class="field-error" id="err_password"></div>
+              <div class="hint" style="margin-top: 6px">
+                Use the credentials given at signup (after approval).
+              </div>
+            </div>
+
+            <div
+              class="form-row"
+              style="align-items: center; justify-content: space-between"
+            >
+              <label
+                class="remember"
+                style="display: flex; align-items: center; gap: 8px"
+              >
+                <input id="remember" type="checkbox" /> Remember me
+              </label>
+              <a class="forgot" href="forgot-password.html">Forgot?</a>
+            </div>
+
+            <div class="row-actions" style="margin-top: 14px">
+              <button
+                id="submitBtn"
+                class="btn"
+                type="submit"
+                aria-live="polite"
+              >
+                <span id="btnLabel">Sign In</span>
+                <span
+                  id="btnSpinner"
+                  class="btn-spinner"
+                  aria-hidden="true"
+                  hidden
+                ></span>
+              </button>
+            </div>
+          </form>
+
+          <div
+            class="meta"
+            style="
+              margin-top: 14px;
+              text-align: center;
+              color: var(--muted);
+              font-size: 13px;
+            "
+          >
+            If you don't have an account or are not approved yet, contact the
+            admin.
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- toast (small non-blocking notice) -->
+    <div id="toast" class="toast" aria-live="assertive" hidden></div>
+
+    <!-- unified modal (used for success & error) -->
+    <div id="resultModal" class="modal" role="dialog" aria-modal="true" hidden>
+      <div
+        class="modal-card"
+        role="document"
+        aria-labelledby="modalTitle"
+        aria-describedby="modalBody"
+      >
+        <div id="modalIcon" class="modal-icon" aria-hidden="true">✓</div>
+        <h3 id="modalTitle">Title</h3>
+        <p id="modalBody">Message</p>
+        <div class="modal-actions">
+          <button id="modalOk" class="btn">OK</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="js/student-login.js"></script>
+  </body>
+</html>
