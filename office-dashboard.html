@@ -4,7 +4,8 @@
     <meta charset="utf-8" />
     <title>Office Dashboard — Hostel ERP</title>
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="css/office-dashboard.css" />
+
   </head>
   <body>
     <div class="container">
@@ -19,9 +20,10 @@
           </div>
         </div>
 
-        <div id="msg"></div>
-        <h2>Pending verification</h2>
-        <div id="pendingArea" class="card" style="padding: 12px"></div>
+       <div id="msg"></div>
+    <h2 style="font-size: 18px; margin-bottom: 10px;">Pending Verification</h2>
+        <div id="pendingArea" class="card pending-card"></div>
+
 
         <h2 style="margin-top: 18px">All students</h2>
         <div id="studentsArea" class="card" style="padding: 12px"></div>
@@ -85,7 +87,26 @@
 </div>
 
 
+<!-- Modal structure -->
+<div id="studentModal" class="modal">
+  <div class="modal-content">
+    <span class="closeBtn">&times;</span>
+    <div class="student-details">
+      <img id="studentImage" src="" alt="Student Photo" />
+      <h2 id="studentName"></h2>
+      <p><strong>ET Number:</strong> <span id="studentET"></span></p>
+      <p><strong>Phone:</strong> <span id="studentPhone"></span></p>
+      <p><strong>Father's Name:</strong> <span id="fatherName"></span></p>
+      <p><strong>Father's Phone:</strong> <span id="fatherPhone"></span></p>
+      <p><strong>Email:</strong> <span id="studentEmail"></span></p>
+      <p><strong>Room Type:</strong> <span id="roomType"></span></p>
+    </div>
+  </div>
+</div>
+
+
+
     <script src="js/auth.js"></script>
-    <script src="js/office-dashboard.js"></script>
+    <script type="module"src="js/office-dashboard.js"></script>
   </body>
 </html>
