@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Student Dashboard — Hostel ERP</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="css/root.css" />
+    <link rel="stylesheet" href="css/dashboard.css" />
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+  </head>
+
+  <body>
+    <!-- Top Navigation -->
+    <header class="topbar">
+      <div class="top-left">
+        <div class="logo-box">HE</div>
+        <div class="top-title">Hostel ERP — Student Dashboard</div>
+      </div>
+      <div class="top-actions">
+        <button id="refreshBtn" class="btn secondary small-btn">Refresh</button>
+        <button id="logoutBtn" class="btn danger small-btn">Logout</button>
+      </div>
+    </header>
+
+    <main class="container">
+      <!-- Loading -->
+      <div id="loading" class="loading-box">Loading dashboard...</div>
+
+      <!-- Error -->
+      <div id="error" class="error-box" style="display: none"></div>
+
+      <!-- DASHBOARD CONTENT -->
+      <div id="dashboard" style="display: none">
+        <!-- Profile Card -->
+        <section class="profile-card card">
+          <div class="profile-left">
+            <div id="photoWrap" class="photo-wrapper">
+              <img id="studentPhoto" alt="Student Photo" class="photo" />
+            </div>
+            <div class="profile-info">
+              <h2 id="studentName">Student Name</h2>
+              <p id="studentEt" class="muted">ET: —</p>
+              <span id="verifiedBadge" class="badge">Verified</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Student Details -->
+        <section class="details-grid">
+          <div class="detail-card card">
+            <h3>Personal Info</h3>
+            <p><b>Email:</b> <span id="studentEmail">—</span></p>
+            <p><b>Phone:</b> <span id="studentPhone">—</span></p>
+            <p><b>Father:</b> <span id="fatherName">—</span></p>
+            <p><b>Father Phone:</b> <span id="fatherPhone">—</span></p>
+          </div>
+
+          <div class="detail-card card">
+            <h3>Hostel Info</h3>
+            <p><b>Room Type:</b> <span id="roomType">—</span></p>
+            <p><b>Fees Paid:</b> ₹<span id="feesPaid">0</span></p>
+            <p><b>Pending Fee:</b> ₹<span id="pendingFee">0</span></p>
+            <p><b>UTR Number:</b> <span id="utrNumber">—</span></p>
+          </div>
+        </section>
+
+        <!-- QR CODE SECTION -->
+        <section class="qr-section card">
+          <h3>Daily QR Code</h3>
+
+          <p><b>QR Token:</b> <span id="qrToken">—</span></p>
+          <p id="qrDate" class="muted">Date: —</p>
+
+          <div class="qr-actions">
+            <button id="copyQrBtn" class="btn secondary">Copy Token</button>
+            <button id="viewQrBtn" class="btn">View QR</button>
+          </div>
+        </section>
+
+        <!-- Notices -->
+        <section class="notices card">
+          <h3>Notices</h3>
+          <ul id="notices">
+            <li>No notices available.</li>
+          </ul>
+        </section>
+      </div>
+
+      <!-- QR MODAL (Full Version) -->
+      <div id="qrModal" class="modal" hidden>
+        <div class="modal-card" role="dialog" aria-modal="true">
+          <div
+            class="modal-icon"
+            style="background: #eef2ff; color: var(--brand)"
+          >
+            QR
+          </div>
+
+          <h3>Your Daily QR</h3>
+
+          <div
+            style="
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              gap: 10px;
+              margin-top: 12px;
+            "
+          >
+            <img
+              id="qrImage"
+              alt="QR code"
+              style="
+                width: 260px;
+                height: 260px;
+                border-radius: 8px;
+                background: white;
+                padding: 6px;
+                box-shadow: 0 8px 24px rgba(2, 6, 23, 0.08);
+              "
+            />
+            <div
+              id="qrModalToken"
+              style="
+                font-family: monospace;
+                word-break: break-all;
+                max-width: 92%;
+                text-align: center;
+              "
+            ></div>
+          </div>
+
+          <div class="modal-actions" style="margin-top: 16px">
+            <button id="qrClose" class="btn secondary">Close</button>
+            <a id="qrDownload" class="btn" download="qr-token.png" href="#"
+              >Download QR</a
+            >
+            <button id="qrCopy2" class="btn secondary">Copy Token</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script type="module" src="js/student-dashboard.js"></script>
+  </body>
+</html>
