@@ -1,47 +1,62 @@
 // js/home.js
 (() => {
-  // Basic helpers
-  const $ = (s) => document.querySelector(s);
-  const $$ = (s) => Array.from(document.querySelectorAll(s));
+  // Helpers
+  const $ = (sel) => document.querySelector(sel);
+  const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+  const byId = (id) => document.getElementById(id);
 
   // Year in footer
-  const yearEl = document.getElementById("year");
+  const yearEl = byId("year");
   if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-  /* Header shadow on scroll + fixed header already set in CSS */
+  /* Header shadow on scroll */
   (function headerScrollHandler() {
     const header = document.querySelector(".site-header");
     if (!header) return;
-    const scThreshold = 8;
+    const threshold = 8;
     function update() {
       const sc = window.scrollY || document.documentElement.scrollTop;
-      if (sc > scThreshold) header.classList.add("scrolled");
-      else header.classList.remove("scrolled");
+      header.classList.toggle("scrolled", sc > threshold);
     }
     update();
     window.addEventListener("scroll", update, { passive: true });
   })();
 
-  /* Mobile menu toggle */
+  /* Mobile menu toggle (working hamburger) */
   (function mobileMenu() {
-    const mobileBtn = document.getElementById("mobileMenuBtn");
-    const nav = document.getElementById("nav");
+    const mobileBtn = byId("mobileMenuBtn");
+    const nav = byId("nav");
     if (!mobileBtn || !nav) return;
+
+    function setOpen(open) {
+      if (open) {
+        nav.classList.add("open");
+        mobileBtn.setAttribute("aria-expanded", "true");
+      } else {
+        nav.classList.remove("open");
+        mobileBtn.setAttribute("aria-expanded", "false");
+      }
+    }
+
     mobileBtn.addEventListener("click", () => {
       const isOpen = mobileBtn.getAttribute("aria-expanded") === "true";
-      mobileBtn.setAttribute("aria-expanded", String(!isOpen));
-      nav.classList.toggle("open");
+      setOpen(!isOpen);
     });
-    // close when nav link clicked (mobile)
-    document.querySelectorAll(".nav-list a").forEach((a) => {
+
+    // close when a nav link clicked on mobile
+    Array.from(nav.querySelectorAll(".nav-list a")).forEach((a) =>
       a.addEventListener("click", () => {
-        if (mobileBtn.getAttribute("aria-expanded") === "true")
-          mobileBtn.click();
-      });
+        if (mobileBtn.getAttribute("aria-expanded") === "true") setOpen(false);
+      })
+    );
+
+    // close on ESC
+    window.addEventListener("keydown", (ev) => {
+      if (ev.key === "Escape") setOpen(false);
     });
   })();
 
-  /* Hero slider (accessible, autoplay, keyboard & touch) */
+  /* Hero slider (autoplay + touch + keyboard) */
   (function heroSlider() {
     const imgs = Array.from(document.querySelectorAll(".hs-img"));
     const dotsWrap = document.getElementById("hsDots");
@@ -60,8 +75,8 @@
       imgs.forEach((img) => {
         const active = parseInt(img.dataset.index, 10) === idx;
         img.datasetActive = active ? "true" : "false";
-        // For accessibility: set aria-hidden
         img.setAttribute("aria-hidden", active ? "false" : "true");
+        img.style.opacity = active ? "1" : "0";
       });
       if (dotsWrap) {
         Array.from(dotsWrap.children).forEach((d, di) =>
@@ -83,10 +98,8 @@
       if (autoplay) timer = setInterval(() => setSlide(idx + 1), delay);
     }
     function stop() {
-      if (timer) {
-        clearInterval(timer);
-        timer = null;
-      }
+      if (timer) clearInterval(timer);
+      timer = null;
     }
 
     // create dots
@@ -109,7 +122,7 @@
     if (prev) prev.addEventListener("click", prevSlide);
     if (next) next.addEventListener("click", nextSlide);
 
-    // keyboard navigation
+    // keyboard
     document.addEventListener("keydown", (e) => {
       if (e.key === "ArrowLeft") prevSlide();
       if (e.key === "ArrowRight") nextSlide();
@@ -124,7 +137,7 @@
       hsFrame.addEventListener("focusout", restart);
     }
 
-    // basic swipe support
+    // touch support
     let startX = null,
       startY = null;
     if (hsFrame) {
@@ -138,7 +151,6 @@
         },
         { passive: true }
       );
-
       hsFrame.addEventListener(
         "touchend",
         (ev) => {
@@ -158,12 +170,12 @@
       );
     }
 
-    // init: mark data-index if missing, and ensure one active
+    // init
     imgs.forEach((img, i) => {
-      if (typeof img.dataset.index === "undefined")
-        img.dataset.index = String(i);
-      // ensure default datasetActive attribute
+      img.dataset.index = img.dataset.index ?? String(i);
       img.datasetActive = i === 0 ? "true" : "false";
+      img.style.transition = "opacity .6s ease";
+      img.style.opacity = i === 0 ? "1" : "0";
       img.setAttribute("aria-hidden", i === 0 ? "false" : "true");
     });
 
@@ -171,19 +183,51 @@
     restart();
   })();
 
-  /* Contact form demo (replace with API call as needed) */
-  (function contactDemo() {
+  /* Contact form: simple validation + simulated submit (replace with API) */
+  (function contactForm() {
     const form = document.getElementById("contactForm");
     if (!form) return;
     const status = document.getElementById("contactStatus");
     const submit = document.getElementById("contactSubmit");
+    const nameI = document.getElementById("contactName");
+    const phoneI = document.getElementById("contactPhone");
+    const msgI = document.getElementById("contactMsg");
+    const errName = document.getElementById("errName");
+    const errPhone = document.getElementById("errPhone");
+    const errMsg = document.getElementById("errMsg");
+
+    function validate() {
+      let ok = true;
+      errName.textContent = "";
+      errPhone.textContent = "";
+      errMsg.textContent = "";
+      if (!nameI.value.trim()) {
+        errName.textContent = "Please enter name.";
+        ok = false;
+      }
+      const phone = phoneI.value.trim();
+      if (!/^\+?\d{9,15}$/.test(phone)) {
+        errPhone.textContent = "Enter a valid phone (digits only).";
+        ok = false;
+      }
+      if (msgI.value && msgI.value.length > 500) {
+        errMsg.textContent = "Message too long.";
+        ok = false;
+      }
+      return ok;
+    }
+
     form.addEventListener("submit", async (ev) => {
       ev.preventDefault();
-      if (!submit) return;
-      submit.disabled = true;
-      if (status) status.textContent = "Sending...";
-      // simulate network call (replace with your real API POST)
+      if (!validate()) return;
+      if (submit) {
+        submit.disabled = true;
+        submit.textContent = "Sending...";
+      }
+      if (status) status.textContent = "";
+      // Replace below with your POST API call
       try {
+        // Simulate network
         await new Promise((r) => setTimeout(r, 900));
         if (status)
           status.textContent = "Message sent — we will call you soon.";
@@ -191,10 +235,13 @@
         setTimeout(() => {
           if (status) status.textContent = "";
         }, 4000);
-      } catch (e) {
+      } catch (err) {
         if (status) status.textContent = "Failed to send. Try again later.";
       } finally {
-        submit.disabled = false;
+        if (submit) {
+          submit.disabled = false;
+          submit.textContent = "Send Request";
+        }
       }
     });
   })();
