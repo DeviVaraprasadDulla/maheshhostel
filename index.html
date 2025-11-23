@@ -42,7 +42,13 @@
               <a
                 role="menuitem"
                 href="/mnt/data/Clear Documentation of hostel_erp (1).pdf"
+                target="_blank"
                 >API Doc</a
+              >
+            </li>
+            <li role="none">
+              <a role="menuitem" href="staff-login.html" class="staff-btn"
+                >Staff Login</a
               >
             </li>
           </ul>
@@ -55,7 +61,7 @@
           aria-expanded="false"
           aria-controls="nav"
         >
-          ☰
+          <span class="hamburger" aria-hidden="true"></span>
         </button>
       </div>
     </header>
@@ -66,7 +72,7 @@
       aria-roledescription="carousel"
       aria-label="Featured"
     >
-      <div id="hsFrame" style="position: relative; height: 100%; width: 100%">
+      <div id="hsFrame" class="hs-frame" tabindex="0">
         <!-- slides - use high-quality images in production -->
         <img
           class="hs-img"
@@ -94,8 +100,10 @@
         />
 
         <!-- controls -->
-        <button id="hsPrev" aria-label="Previous slide">‹</button>
-        <button id="hsNext" aria-label="Next slide">›</button>
+        <button id="hsPrev" class="hs-arrow" aria-label="Previous slide">
+          ‹
+        </button>
+        <button id="hsNext" class="hs-arrow" aria-label="Next slide">›</button>
 
         <!-- dots -->
         <div id="hsDots" role="tablist" aria-label="Slide dots"></div>
@@ -105,7 +113,7 @@
     <!-- ===== FEATURES ===== -->
     <section id="features" class="features" aria-labelledby="featuresTitle">
       <h2 id="featuresTitle">Why Mahesh Hostel?</h2>
-      <p class="hint" style="color: var(--muted); margin-top: 8px">
+      <p class="hint" style="margin-top: 6px">
         Safe, clean and student-first living — designed for study & comfort.
       </p>
 
@@ -148,8 +156,8 @@
 
     <!-- ===== GALLERY ===== -->
     <section id="gallery" aria-labelledby="galleryTitle">
-      <h2 id="galleryTitle" style="text-align: center">Gallery</h2>
-      <p style="text-align: center; color: var(--muted); margin-top: 6px">
+      <h2 id="galleryTitle">Gallery</h2>
+      <p class="hint" style="margin-top: 6px">
         Explore the property and amenities.
       </p>
 
@@ -179,40 +187,17 @@
 
     <!-- ===== CONTACT / CTA ===== -->
     <section id="contact" aria-labelledby="contactTitle">
-      <div
-        style="
-          max-width: 960px;
-          margin: 0 auto;
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 18px;
-          padding: 10px;
-        "
-      >
-        <div
-          style="
-            background: var(--white);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: var(--shadow);
-          "
-        >
+      <div class="contact-grid">
+        <div class="contact-card">
           <h2 id="contactTitle">Contact / Visit Request</h2>
           <p class="hint">
             Have questions? Drop a message and we'll call you back.
           </p>
 
-          <form
-            id="contactForm"
-            aria-label="Contact form"
-            style="margin-top: 12px"
-          >
-            <div style="display: grid; gap: 10px">
-              <label>
-                <span
-                  style="display: block; font-weight: 600; margin-bottom: 6px"
-                  >Full name</span
-                >
+          <form id="contactForm" aria-label="Contact form" class="contact-form">
+            <div class="form-row">
+              <label class="field">
+                <span class="label-text">Full name</span>
                 <input
                   id="contactName"
                   name="name"
@@ -220,13 +205,11 @@
                   required
                   placeholder="Your name"
                 />
+                <div class="field-error" id="errName"></div>
               </label>
 
-              <label>
-                <span
-                  style="display: block; font-weight: 600; margin-bottom: 6px"
-                  >Phone</span
-                >
+              <label class="field">
+                <span class="label-text">Phone</span>
                 <input
                   id="contactPhone"
                   name="phone"
@@ -234,90 +217,58 @@
                   required
                   placeholder="+91 9XXXXXXXXX"
                 />
+                <div class="field-error" id="errPhone"></div>
               </label>
 
-              <label>
-                <span
-                  style="display: block; font-weight: 600; margin-bottom: 6px"
-                  >Message</span
-                >
+              <label class="field">
+                <span class="label-text">Message</span>
                 <textarea
                   id="contactMsg"
                   name="message"
                   rows="4"
                   placeholder="Short message"
-                  style="
-                    padding: 10px;
-                    border-radius: 8px;
-                    border: 1px solid #e6e9ef;
-                  "
                 ></textarea>
+                <div class="field-error" id="errMsg"></div>
               </label>
 
-              <div style="display: flex; gap: 10px; align-items: center">
-                <button id="contactSubmit" class="btn" type="submit">
-                  Send Request
-                </button>
-                <div
-                  id="contactStatus"
-                  style="font-weight: 600; color: var(--muted)"
-                ></div>
+              <div class="form-actions">
+                <button id="contactSubmit" class="btn">Send Request</button>
+                <div id="contactStatus" class="hint"></div>
               </div>
             </div>
           </form>
         </div>
 
-        <div
-          style="
-            background: var(--white);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: var(--shadow);
-          "
-        >
+        <aside class="quick-card">
           <h3>Quick Links</h3>
-          <ul
-            style="
-              margin-top: 8px;
-              list-style: none;
-              padding-left: 0;
-              color: var(--muted);
-            "
-          >
+          <ul class="quick-links">
             <li><a href="signup.html">Student Signup</a></li>
             <li><a href="student-login.html">Student Login</a></li>
             <li>
-              <a href="/mnt/data/Clear Documentation of hostel_erp (1).pdf"
+              <a
+                href="/mnt/data/Clear Documentation of hostel_erp (1).pdf"
+                target="_blank"
                 >API Documentation (internal)</a
               >
             </li>
+            <li><a href="staff-login.html">Staff Login</a></li>
           </ul>
-        </div>
+        </aside>
       </div>
     </section>
 
     <!-- ===== FOOTER ===== -->
     <footer role="contentinfo">
-      <div style="max-width: 1200px; margin: auto; padding: 8px 16px">
-        <div
-          style="
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            align-items: center;
-          "
+      <div class="footer-inner">
+        <div class="brand-foot">Mahesh Hostel</div>
+        <small
+          >&copy; <span id="year"></span> Mahesh Hostel — All rights
+          reserved.</small
         >
-          <span style="font-weight: 700">Mahesh Hostel</span>
-          <small
-            >&copy; <span id="year"></span> Mahesh Hostel — All rights
-            reserved.</small
-          >
-        </div>
       </div>
     </footer>
 
     <!-- ===== SCRIPTS ===== -->
-    <!-- Production JS: minified slider + interactivity -->
-    <script src="js/home.min.js" defer></script>
+    <script src="js/home.js" defer></script>
   </body>
 </html>
