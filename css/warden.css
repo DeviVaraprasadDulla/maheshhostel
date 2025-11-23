@@ -1,0 +1,221 @@
+/* Import Better Font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
+/* GLOBAL STYLE */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: "Inter", sans-serif;
+    background: #f0f2f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* Title */
+h2 {
+    margin-top: 30px;
+    font-size: 30px;
+    color: #222;
+    font-weight: 600;
+}
+
+/* Scan Button */
+#scanBtn {
+    margin-top: 20px;
+    background: #0066ff;
+    color: #fff;
+    padding: 14px 26px;
+    border: none;
+    border-radius: 10px;
+    font-size: 20px;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0px 4px 12px rgba(0, 102, 255, 0.3);
+    transition: 0.2s ease-in-out;
+}
+
+#scanBtn:hover {
+    background: #0052cc;
+    transform: scale(1.05);
+}
+
+#scanBtn:active {
+    transform: scale(0.97);
+}
+
+/* Scanner Box */
+#scanner {
+    margin-top: 25px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.15);
+}
+
+/* RESULT BOX BASE */
+#result {
+    margin-top: 25px;
+    width: 350px;
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.12);
+
+    text-align: center;
+    font-size: 16px;
+    color: #333;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+/* IMAGE */
+#result img {
+    width: 130px;
+    height: 130px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-bottom: 15px;
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.25);
+}
+
+/* DETAILS */
+.result-details {
+    width: 100%;
+    text-align: left;
+}
+
+.result-details p {
+    margin: 8px 0;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+
+
+/* ------------------------------
+   MEAL BUTTON COLORS (IMPORTANT)
+------------------------------ */
+
+.buttons {
+    margin-top: 15px;
+    display: flex;
+    gap: 12px;
+}
+
+.buttons button {
+    padding: 10px 20px;
+    border: none;
+    color: white;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+/* Not taken (null) → blue */
+button[data-value="null"] {
+    background: blue;
+}
+
+/* Taken (true) → green */
+button[data-value="true"] {
+    background: green;
+}
+
+/* Rejected (false) → red */
+button[data-value="false"] {
+    background: red;
+}
+
+/* After click: force green permanent */
+button.meal-selected {
+    background: green !important;
+    color: white !important;
+    opacity: 1 !important;
+}
+
+/* Disabled state */
+.buttons button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+
+
+/* ============================
+      🔥  DESKTOP DESIGN
+============================ */
+@media (min-width: 769px) {
+
+    #result {
+        width: 380px;
+        padding: 25px;
+    }
+
+    #result img {
+        width: 150px;
+        height: 150px;
+    }
+
+    #scanBtn {
+        padding: 14px 30px;
+        font-size: 20px;
+    }
+
+    h2 {
+        font-size: 32px;
+    }
+}
+
+
+
+/* ============================
+      🔥  MOBILE DESIGN
+============================ */
+@media (max-width: 600px) {
+
+    h2 {
+        font-size: large;
+    }
+
+    #scanBtn {
+        width: 100%;
+        padding: 18px;
+        font-size: 22px;
+        border-radius: 12px;
+    }
+
+    #scanner {
+        width: 100% !important;
+        box-shadow: none;
+    }
+
+    #result {
+        width: 100%;
+        padding: 25px;
+        border-radius: 18px;
+        box-shadow: 0px 6px 20px rgba(0,0,0,0.15);
+        font-size: 18px;
+    }
+
+    #result img {
+        width: 160px;
+        height: 160px;
+    }
+
+    .result-details p {
+        font-size: 17px;
+        margin: 10px 0;
+    }
+}
