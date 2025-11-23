@@ -1,221 +1,142 @@
-/* Import Better Font */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+/* Root theme */
+:root {
+  --brand: #2563eb;
+  --success: #1abc9c;
+  --danger: #e74c3c;
+  --muted: #64748b;
+  --card-bg: #ffffff;
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --radius: 12px;
+}
 
-/* GLOBAL STYLE */
 body {
-    margin: 0;
-    padding: 0;
-    font-family: "Inter", sans-serif;
-    background: #f0f2f5;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
+  margin: 0;
+  font-family: Inter, system-ui, sans-serif;
+  background: #f5f7fb;
+  color: #1f2937;
 }
 
-/* Title */
-h2 {
-    margin-top: 30px;
-    font-size: 30px;
-    color: #222;
-    font-weight: 600;
+/* Header */
+.header {
+  background: #fff;
+  padding: 16px;
+  box-shadow: var(--shadow);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-/* Scan Button */
-#scanBtn {
-    margin-top: 20px;
-    background: #0066ff;
-    color: #fff;
-    padding: 14px 26px;
-    border: none;
-    border-radius: 10px;
-    font-size: 20px;
-    font-weight: 500;
-    cursor: pointer;
-    box-shadow: 0px 4px 12px rgba(0, 102, 255, 0.3);
-    transition: 0.2s ease-in-out;
+.logout-btn {
+  background: var(--danger);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
 }
 
-#scanBtn:hover {
-    background: #0052cc;
-    transform: scale(1.05);
+/* Layout container */
+.container {
+  padding: 20px;
+  max-width: 700px;
+  margin: auto;
 }
 
-#scanBtn:active {
-    transform: scale(0.97);
+/* Scan card */
+.scan-card,
+.result-card {
+  background: var(--card-bg);
+  padding: 20px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 24px;
 }
 
-/* Scanner Box */
-#scanner {
-    margin-top: 25px;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.15);
+h3 {
+  margin: 0 0 8px 0;
 }
 
-/* RESULT BOX BASE */
-#result {
-    margin-top: 25px;
-    width: 350px;
-    background: #ffffff;
-    padding: 20px;
-    border-radius: 16px;
-    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.12);
-
-    text-align: center;
-    font-size: 16px;
-    color: #333;
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-
-    animation: fadeIn 0.4s ease-in-out;
+.desc {
+  color: var(--muted);
+  margin-bottom: 16px;
 }
 
-/* IMAGE */
-#result img {
-    width: 130px;
-    height: 130px;
-    object-fit: cover;
-    border-radius: 50%;
-    margin-bottom: 15px;
-    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.25);
+/* Buttons */
+.btn-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
-/* DETAILS */
-.result-details {
-    width: 100%;
-    text-align: left;
+.btn {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
 }
 
-.result-details p {
-    margin: 8px 0;
-    font-size: 15px;
-    font-weight: 500;
+.primary {
+  background: var(--brand);
+  color: white;
 }
 
-/* Animation */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+.danger {
+  background: var(--danger);
+  color: white;
 }
 
-
-
-/* ------------------------------
-   MEAL BUTTON COLORS (IMPORTANT)
------------------------------- */
-
-.buttons {
-    margin-top: 15px;
-    display: flex;
-    gap: 12px;
+/* Camera box */
+.camera-box {
+  width: 100%;
+  height: 260px;
+  background: black;
+  border-radius: 12px;
+  overflow: hidden;
 }
 
-.buttons button {
-    padding: 10px 20px;
-    border: none;
-    color: white;
-    font-weight: bold;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 16px;
+.camera-hint {
+  text-align: center;
+  color: var(--muted);
+  margin-top: 6px;
 }
 
-/* Not taken (null) → blue */
-button[data-value="null"] {
-    background: blue;
+/* Result box */
+.result-box {
+  padding: 12px;
+  border-radius: 8px;
+  background: #f0f4ff;
+  color: #333;
+  min-height: 120px;
 }
 
-/* Taken (true) → green */
-button[data-value="true"] {
-    background: green;
+/* Student card inside result */
+.student-card {
+  display: flex;
+  gap: 14px;
+  align-items: center;
 }
 
-/* Rejected (false) → red */
-button[data-value="false"] {
-    background: red;
+.student-img {
+  width: 90px;
+  height: 90px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: #eee;
 }
 
-/* After click: force green permanent */
-button.meal-selected {
-    background: green !important;
-    color: white !important;
-    opacity: 1 !important;
+.meal-buttons {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
-/* Disabled state */
-.buttons button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-
-
-/* ============================
-      🔥  DESKTOP DESIGN
-============================ */
-@media (min-width: 769px) {
-
-    #result {
-        width: 380px;
-        padding: 25px;
-    }
-
-    #result img {
-        width: 150px;
-        height: 150px;
-    }
-
-    #scanBtn {
-        padding: 14px 30px;
-        font-size: 20px;
-    }
-
-    h2 {
-        font-size: 32px;
-    }
-}
-
-
-
-/* ============================
-      🔥  MOBILE DESIGN
-============================ */
-@media (max-width: 600px) {
-
-    h2 {
-        font-size: large;
-    }
-
-    #scanBtn {
-        width: 100%;
-        padding: 18px;
-        font-size: 22px;
-        border-radius: 12px;
-    }
-
-    #scanner {
-        width: 100% !important;
-        box-shadow: none;
-    }
-
-    #result {
-        width: 100%;
-        padding: 25px;
-        border-radius: 18px;
-        box-shadow: 0px 6px 20px rgba(0,0,0,0.15);
-        font-size: 18px;
-    }
-
-    #result img {
-        width: 160px;
-        height: 160px;
-    }
-
-    .result-details p {
-        font-size: 17px;
-        margin: 10px 0;
-    }
+.meal-buttons button {
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  border: none;
+  cursor: pointer;
+  color: white;
 }
