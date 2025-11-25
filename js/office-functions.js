@@ -7,22 +7,14 @@ export function viewStudent(id, data) {
 
   const studentImage = document.getElementById("studentImage");
 
-  // Check if image exists
-  try {
-    const imgTest = new Image();
-    imgTest.onload = () => {
-      studentImage.src = student.student_image?.startsWith("data:")
-        ? student.student_image
-        : student.student_image;
-    };
-    imgTest.onerror = () => {
-      studentImage.src = "/maheshhostel/images/default-student.png";
-    };
-    imgTest.src = student.student_image
-      ? (student.student_image.startsWith("data:") ? student.student_image : student.student_image)
-      : "/maheshhostel/images/default-student.png";
-  } catch (err) {
+  // SIMPLE & WORKING IMAGE HANDLING
+  if (student.student_image) {
+    studentImage.src = student.student_image; 
+    console.log(student.student_image);
+    studentImage.style.display = "block";
+  } else {
     studentImage.src = "/maheshhostel/images/default-student.png";
+    studentImage.style.display = "block";
   }
 
   studentImage.alt = student.student_name || "Student Photo";
@@ -37,6 +29,8 @@ export function viewStudent(id, data) {
 
   document.getElementById("studentModal").style.display = "flex";
 }
+
+
 
 // Approve student
 export async function approve(id) {

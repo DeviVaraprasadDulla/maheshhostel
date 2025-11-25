@@ -132,6 +132,67 @@ h3 {
   flex-wrap: wrap;
 }
 
+@media (min-width: 769px) {
+
+    #result {
+        width: 380px;
+        padding: 25px;
+    }
+
+    #result img {
+        width: 150px;
+        height: 150px;
+    }
+
+    #scanBtn {
+        padding: 14px 30px;
+        font-size: 20px;
+    }
+
+    h2 {
+        font-size: 32px;
+    }
+}
+
+
+
+/* ============================
+      🔥  MOBILE DESIGN
+@media (max-width: 600px) {
+
+    h2 {
+        font-size: large;
+    }
+
+    #scanBtn {
+        width: 100%;
+        padding: 18px;
+        font-size: 22px;
+        border-radius: 12px;
+    }
+
+    #scanner {
+        width: 100% !important;
+        box-shadow: none;
+    }
+
+    #result {
+        width: 100%;
+        padding: 25px;
+        border-radius: 18px;
+        box-shadow: 0px 6px 20px rgba(0,0,0,0.15);
+        font-size: 18px;
+    }
+
+    #result img {
+        width: 160px;
+        height: 160px;
+    }
+
+    .result-details p {
+        font-size: 17px;
+        margin: 10px 0;
+    }
 .meal-buttons button {
   padding: 8px 12px;
   border-radius: 6px;

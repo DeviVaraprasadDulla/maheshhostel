@@ -158,7 +158,8 @@ function renderProfile(data = {}) {
     if (imageUrl) {
       if (existingInitials) existingInitials.remove();
       studentPhoto.style.display = "block";
-      studentPhoto.src = imageUrl;
+      studentPhoto.src = imageUrl; 
+      console.log(imageUrl);
       studentPhoto.alt = `${name}'s photo`;
     } else {
       studentPhoto.style.display = "none";
@@ -348,7 +349,7 @@ async function fetchProfile() {
       err?.data?.message || err?.message || "Failed to load dashboard";
     console.error("Profile fetch error:", err);
     showError(message);
-    showToast(message, { type: "error", duration: 3500 });
+    showToast(message, { type: "error", duration: 3500 });  
   }
 }
 
