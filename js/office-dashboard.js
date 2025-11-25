@@ -2,6 +2,8 @@
 
 import { viewStudent, approve, editStudent, deleteStudent, setupModals } from "./office-functions.js";
 
+
+
 let dashboardData = null; // store dashboard data globally
 
 // Show message
@@ -55,7 +57,7 @@ async function fetchDashboard() {
 
 // Render dashboard
 function renderDashboard(data) {
-  dashboardData = data; // store globally
+  dashboardData = data;
 
   const pending = data.pending_verification || [];
   const students = data.students || [];
@@ -73,7 +75,13 @@ function renderDashboard(data) {
             <div class="pending-row">
               <div class="pending-info">
                 <span>ET-N: ${p.et_number}</span>
-                <span>PH: ${p.student_phone_number}</span>
+                <span>PH: ${p.student_phone_number}</span> 
+                <img 
+                src=${p.student_image}
+                
+      alt="Student Photo" 
+      class="pending-student-img"
+    />
                 <button class="btn viewBtn" data-id="${p.id}">View</button>
               </div>
               <div class="pending-buttons">

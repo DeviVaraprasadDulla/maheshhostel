@@ -149,7 +149,86 @@ button.meal-selected {
 .buttons button:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+} 
+/* Modal overlay background */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; /* keeps modal on top */
 }
+
+/* Modal box */
+.modal-box {
+    background: #fff;
+    padding: 20px;
+    width: 350px;
+    border-radius: 10px;
+    position: relative; /* required for close-btn */
+    z-index: 10000; /* above overlay */
+}
+
+/* Close button */
+.close-btn {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 11000; /* highest so it never hides */
+    color: #333;
+} 
+/* VIEW STATS button */
+#viewStatsBtn {
+    background-color: #28a745;   /* Green */
+    color: white;                /* White text */
+    border: none;
+    padding: 10px 18px;
+    font-size: 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+/* Hover effect */
+#viewStatsBtn:hover {
+    background-color: #218838;   /* Darker green */
+}
+
+
+
+@keyframes pop {
+  from { transform: scale(0.8); }
+  to { transform: scale(1); }
+}
+
+.close-btn {
+  float: right;
+  cursor: pointer;
+  font-size: 22px;
+  color: red;
+}
+
+.stats-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.stats-table th, .stats-table td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: center;
+  font-size: 14px;
+}
+
 
 
 

@@ -11,10 +11,23 @@
   <h2>Warden Dashboard</h2>
 
   <button id="scanBtn">Scan QR</button>
+  <button id="viewStatsBtn">View Stats</button>
 
   <div id="scanner" style="width:300px; margin-top:20px; display:none;"></div>
 
   <div id="result" style="margin-top:20px;"></div>
+
+
+<!-- Stats Modal -->
+<div id="statsModal" class="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <span class="close-btn" id="closeStatsModal">&times;</span>
+
+    <h3>Meal Stats</h3>
+
+    <div id="statsContent"></div>
+  </div>
+</div>
 
   <script src="js/warden.js"></script>
 </body>

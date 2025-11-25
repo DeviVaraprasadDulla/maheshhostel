@@ -12,7 +12,7 @@ const MEAL_API = "https://hostel-erp-bef5.onrender.com/api/meal/action/";
 const ACCESS_TOKEN = localStorage.getItem("access_token");
 console.log("ACCESS TOKEN:", ACCESS_TOKEN);
 
-scanBtn.addEventListener("click", startScanner);
+scanBtn.addEventListener("click", startScanner); 
 
 function startScanner() {
     resultDiv.innerHTML = "";
@@ -143,7 +143,8 @@ function displayStudent(data, qrToken) {
 
     const img = document.getElementById("studentImage");
     if (data.student_image) {
-        img.src = data.student_image;
+        img.src = data.student_image; 
+        console.log(data.student_image);
         img.style.display = "block";
     } else {
         img.style.display = "none";
@@ -152,7 +153,7 @@ function displayStudent(data, qrToken) {
     // Colors ONLY from backend
     setMealColor("breakfast", data.breakfast);
     setMealColor("lunch", data.lunch);
-    setMealColor("dinner", data.dinner);
+    setMealColor("dinner", data.dinner); 
 
     // Assign click handlers
     document.getElementById("breakfastBtn").onclick = () => updateMeal("breakfast", qrToken);
@@ -187,6 +188,77 @@ function setMealColor(mealType, scanned) {
         btn.disabled = true;  // <-- disable here
         return;
     }
+} 
+async function viewstats() {
+
+    const statsModal = document.getElementById("statsModal");
+    const statsContent = document.getElementById("statsContent");
+
+    statsModal.style.display = "flex";
+    statsContent.innerHTML = `<p>Loading stats...</p>`;
+
+    console.log("🔍 View Stats Called");
+
+    // CHECK IF TOKEN EXISTS
+    console.log("TOKEN:", ACCESS_TOKEN);
+
+    try {
+        const res = await fetch("https://hostel-erp-bef5.onrender.com/api/warden/meal-stats/", {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${ACCESS_TOKEN}`,
+                "Content-Type": "application/json"
+            }
+        });
+
+        console.log("STATUS:", res.status);
+
+        const data = await res.json();
+        console.log("RESPONSE DATA:", data);
+
+        if (!res.ok) {
+            console.log("❌ Backend Error - Not OK response");
+            statsContent.innerHTML = `<p style="color:red;">Unable to load stats</p>`;
+            return;
+        }
+
+        statsContent.innerHTML = `
+            <table class="stats-table">
+                <tr>
+                    <th>Date</th>
+                    <th>Breakfast</th>
+                    <th>Lunch</th>
+                    <th>Dinner</th>
+                </tr>
+
+                <tr>
+                    <td>TODAY</td>
+                    <td>${data.today.breakfast_count}</td>
+                    <td>${data.today.lunch_count}</td>
+                    <td>${data.today.dinner_count}</td>
+                </tr>
+
+                <tr>
+                    <td>YESTERDAY</td>
+                    <td>${data.yesterday.breakfast_count}</td>
+                    <td>${data.yesterday.lunch_count}</td>
+                    <td>${data.yesterday.dinner_count}</td>
+                </tr>
+            </table>
+        `;
+    } 
+    catch (error) {
+        console.log("🔥 CATCH ERROR:", error);   // <-- THIS WILL SHOW THE REAL ERROR
+        statsContent.innerHTML = `<p style="color:red;">Server error</p>`;
+    }
 }
+
+
+document.getElementById("viewStatsBtn").addEventListener("click", viewstats); 
+document.getElementById("closeStatsModal").addEventListener("click", () => {
+    document.getElementById("statsModal").style.display = "none";
+});
+
+
 
 
