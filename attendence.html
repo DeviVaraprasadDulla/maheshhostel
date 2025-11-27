@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Attendance</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    .btn {
+      padding: 12px 20px;
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 18px;
+      border-radius: 6px;
+      margin: 10px 0;
+      width: 100%;
+    }
+    .present { background: green; }
+    .absent { background: red; }
+    .back { background: #555; }
+  </style>
+</head>
+<body>
+
+  <h2>Attendance Options</h2>
+
+  <button class="btn present" onclick="goPresent()">Students Attendence</button>
+  
+  <button class="btn back" onclick="goBack()">← Back to Dashboard</button>
+
+  <script>
+    function goPresent() {
+      window.location.href = "present-dashboard.html";
+    }
+
+    function goAbsent() {
+      window.location.href = "absent-dashboard.html";
+    }
+
+    function goBack() {
+      window.location.href = "warden-dashboard.html";
+    }
+  </script>
+
+</body>
+</html>
