@@ -209,5 +209,9 @@ function openStatsModal() {
 
 function closeStatsModal() {
   document.getElementById("statsModal").style.display = "none";
-}
+} 
+document.getElementById("attendenceBtn").addEventListener("click", () => {
+  window.location.href = "attendence.html";
+});
+
 

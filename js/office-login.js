@@ -37,9 +37,12 @@ document.addEventListener("DOMContentLoaded", () => {
       );
 
       const text = await res.text();
+      
       let data;
       try { data = text ? JSON.parse(text) : null; }
       catch { data = { message: text }; }
+      console.log("Backend Response:", data);
+
 
       if (!res.ok) {
         if (res.status === 400) {
@@ -60,16 +63,18 @@ document.addEventListener("DOMContentLoaded", () => {
       // -----------------------------------------
       // 🔥 ROLE-BASED REDIRECTION
       // -----------------------------------------
-      setTimeout(() => {
-        if (data.role === "officer") {
-          window.location.href = "office-dashboard.html";
-        } else if (data.role === "warden") {
-          window.location.href = "warden-dashboard.html";
-        } else {
-          // fallback if role missing / unknown
-          window.location.href = "office-dashboard.html";
-        }
-      }, 600);
+     setTimeout(() => {
+  if (data.role === "officer") {
+    window.location.href = "office-dashboard.html";
+  } else if (data.role === "warden") {
+    window.location.href = "warden-dashboard.html";
+  } else if (data.role === "owner") {
+    window.location.href = "admin.html"; // ✔ owner → admin page
+  } else {
+    // fallback
+    window.location.href = "office-dashboard.html";
+  }
+}, 600);
 
     } catch (err) {
       showMessage("error", err.message);
