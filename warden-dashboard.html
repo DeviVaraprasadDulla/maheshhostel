@@ -32,7 +32,8 @@
 
         <div class="btn-row">
           <button id="startBtn" class="btn primary">Start Scanner</button>
-          <button id="stopBtn" class="btn danger">Stop</button>
+          <button id="stopBtn" class="btn danger">Stop</button> 
+          <button id="viewBtn" class="btn dannger">Viewstats</button> 
         </div>
 
         <!-- CAMERA -->
@@ -45,6 +46,29 @@
         <h3>Last Scan</h3>
         <div id="resultBox" class="result-box">No scans yet</div>
       </section>
-    </main>
+    </main> 
+
+
+
+    <!-- MODAL -->
+<div id="statsModal" class="modal">
+  <div class="modal-content">
+    <span id="closeModal" class="close">&times;</span>
+    <h3>Meal Statistics</h3>
+
+    <table class="stats-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Breakfast</th>
+          <th>Lunch</th>
+          <th>Dinner</th>
+        </tr>
+      </thead>
+      <tbody id="statsBody"></tbody>
+    </table>
+  </div>
+</div>
+
   </body>
 </html>
