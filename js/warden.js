@@ -141,10 +141,73 @@ async function mealAction(mealType, qrToken) {
   const data = await res.json();
   console.log(data);
   handleScan(qrToken);
-}
+} 
 
 // Logout
 function logout() {
   localStorage.clear();
   window.location.href = "./office-dashboard.html";
+} 
+document.getElementById("viewBtn").addEventListener("click", loadStats);
+document.getElementById("closeModal").addEventListener("click", closeStatsModal);
+
+async function loadStats() {
+  
+
+  try {
+    const response = await fetch(
+      "https://hostel-erp-bef5.onrender.com/api/warden/meal-stats/",
+      {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${ACCESS_TOKEN}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    if (!response.ok) {
+      alert("Failed to load stats!");
+      return;
+    }
+
+    const data = await response.json();
+    displayStats(data);
+  } catch (error) {
+    console.error(error);
+    alert("Error loading stats");
+  }
 }
+
+function displayStats(data) {
+  const tbody = document.getElementById("statsBody");
+  tbody.innerHTML = ""; // clear old data
+
+  const rows = [
+    data.today,
+    data.yesterday
+  ];
+
+  rows.forEach(item => {
+    const row = `
+      <tr>
+        <td>${item.date}</td>
+        <td>${item.breakfast_count}</td>
+        <td>${item.lunch_count}</td>
+        <td>${item.dinner_count}</td>
+      </tr>
+    `;
+    tbody.innerHTML += row;
+  });
+
+  openStatsModal();
+}
+
+function openStatsModal() {
+  document.getElementById("statsModal").style.display = "flex";
+}
+
+function closeStatsModal() {
+  document.getElementById("statsModal").style.display = "none";
+}
+
