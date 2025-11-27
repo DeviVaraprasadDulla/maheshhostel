@@ -1,0 +1,256 @@
+/* reset.css - matches forgot.css style (mobile-first) */
+:root {
+  --brand: #2563eb;
+  --bg: #f6f8fb;
+  --card: #ffffff;
+  --muted: #6b7280;
+  --danger: #ef4444;
+  --success: #10b981;
+  --text: #0b1220;
+  --shadow: 0 10px 30px rgba(2, 6, 23, 0.06);
+  --radius: 12px;
+  --maxw: 720px;
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+.page {
+  max-width: var(--maxw);
+  margin: 18px auto;
+  padding: 16px;
+}
+
+/* top */
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.logo {
+  font-weight: 800;
+  color: var(--brand);
+  text-decoration: none;
+  font-size: 1.1rem;
+}
+.top-nav .link {
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* card */
+.card.panel {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: var(--shadow);
+}
+
+/* headings */
+.title {
+  font-size: 1.25rem;
+  margin: 0 0 6px;
+}
+.lead {
+  color: var(--muted);
+  font-size: 0.95rem;
+  margin: 0 0 14px;
+}
+
+/* form */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+label {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea {
+  padding: 12px 12px;
+  font-size: 1rem;
+  border-radius: 10px;
+  border: 1px solid #e6e9ef;
+  background: white;
+  outline: none;
+}
+input:focus {
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.06);
+  border-color: var(--brand);
+}
+
+.field-error {
+  color: var(--danger);
+  font-size: 0.87rem;
+  min-height: 18px;
+}
+
+/* password strength */
+.pw-strength {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+.pw-strength .bar {
+  width: 36px;
+  height: 6px;
+  background: #e6e6e6;
+  border-radius: 3px;
+  transition: background 120ms;
+}
+.pw-strength .bar.active {
+  background: var(--success);
+}
+
+/* actions */
+.actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  background: var(--brand);
+  color: white;
+  min-height: 44px;
+}
+.btn.ghost {
+  background: transparent;
+  color: var(--brand);
+  border: 1px solid rgba(37, 99, 235, 0.12);
+}
+.btn.primary {
+  background: var(--brand);
+}
+.btn[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* spinner */
+.spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  margin-left: 8px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: rgba(255, 255, 255, 0.95);
+  animation: spin 900ms linear infinite;
+  vertical-align: middle;
+}
+.spinner[hidden] {
+  display: none;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* modal */
+.modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(2, 6, 23, 0.5);
+  z-index: 3000;
+  padding: 18px;
+}
+.modal[hidden] {
+  display: none;
+}
+.modal-card {
+  width: min(520px, 96%);
+  background: var(--card);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 12px 44px rgba(2, 6, 23, 0.28);
+  text-align: center;
+}
+.modal-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--success);
+  color: white;
+  margin: -48px auto 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+}
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+/* alert/toast */
+#toastWrap {
+  position: fixed;
+  right: 16px;
+  bottom: 20px;
+  z-index: 4000;
+}
+.toast {
+  background: linear-gradient(180deg, #10b981, #059669);
+  color: white;
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin-top: 8px;
+  box-shadow: 0 10px 30px rgba(2, 6, 23, 0.12);
+  font-weight: 700;
+}
+.toast.error {
+  background: linear-gradient(180deg, #ef4444, #b91c1c);
+}
+
+@media (min-width: 720px) {
+  .page {
+    padding: 22px;
+  }
+  .title {
+    font-size: 1.4rem;
+  }
+  .actions {
+    justify-content: flex-start;
+  }
+}
