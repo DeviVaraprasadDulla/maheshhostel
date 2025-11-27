@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Mahesh Hostel — Admin Dashboard</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/admin.css" />
+
+    <!-- Chart.js (for meal stats) -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"
+      defer
+    ></script>
+
+    <meta
+      name="description"
+      content="Admin dashboard — manage students, approvals and staff"
+    />
+  </head>
+  <body>
+    <header class="topbar" role="banner">
+      <div class="topbar-inner">
+        <div class="brand">Mahesh Hostels — Admin</div>
+        <div class="actions">
+          <button id="exportCsv" class="btn small">Export CSV</button>
+          <button id="openAddStaff" class="btn small">Add Staff</button>
+          <button id="logoutBtn" class="btn danger small">Logout</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="container" id="app">
+      <section class="panel" aria-labelledby="studentsTitle">
+        <div class="panel-header">
+          <h1 id="studentsTitle">Students</h1>
+          <div class="controls">
+            <input
+              id="searchBox"
+              type="search"
+              placeholder="Search by name / ET / email"
+              aria-label="Search students"
+            />
+            <select id="perPage" aria-label="Rows per page">
+              <option value="10">10 / page</option>
+              <option value="25">25 / page</option>
+              <option value="50">50 / page</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="listContainer" class="panel-body">
+          <div id="loader" class="skeleton-grid" aria-hidden="false"></div>
+
+          <div id="tableWrap" class="table-wrap" hidden>
+            <table id="studentsTable" class="table" aria-live="polite">
+              <thead>
+                <tr>
+                  <th>Photo</th>
+                  <th>Name</th>
+                  <th>ET</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Fees</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="studentsBody"></tbody>
+            </table>
+
+            <div class="pager">
+              <div id="pagerInfo" class="pager-info"></div>
+              <div class="pager-controls">
+                <button id="prevBtn" class="btn small">Prev</button>
+                <button id="nextBtn" class="btn small">Next</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="emptyState" class="empty" hidden>
+            <p>No students found.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- right column with stats & quick actions -->
+      <section
+        class="panel small-panel"
+        id="rightPanel"
+        aria-labelledby="quickTitle"
+      >
+        <div class="panel-header">
+          <h2 id="quickTitle">Quick Actions</h2>
+        </div>
+        <div class="panel-body">
+          <button id="refreshBtn" class="btn">Refresh</button>
+          <button id="approveAllBtn" class="btn secondary">
+            Approve All Pending
+          </button>
+
+          <div style="margin-top: 16px">
+            <strong>Summary</strong>
+            <ul id="summaryList" class="summary-list">
+              <li>All students: <span id="summaryTotal">—</span></li>
+              <li>Pending approval: <span id="summaryPending">—</span></li>
+              <li>Verified: <span id="summaryVerified">—</span></li>
+            </ul>
+          </div>
+
+          <div style="margin-top: 18px">
+            <strong>Meal Stats (Today)</strong>
+            <canvas
+              id="mealsChart"
+              width="280"
+              height="220"
+              aria-label="Meal chart"
+            ></canvas>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ADD STAFF MODAL -->
+    <div id="addStaffModal" class="modal" hidden>
+      <div
+        class="modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="addStaffTitle"
+      >
+        <h3 id="addStaffTitle">Add Staff</h3>
+
+        <form id="addStaffForm" class="form" novalidate>
+          <div class="form-grid">
+            <label>
+              Username *
+              <input
+                id="staff_username"
+                name="username"
+                required
+                minlength="3"
+              />
+              <div class="field-error" id="err_username"></div>
+            </label>
+
+            <label>
+              Password *
+              <input
+                id="staff_password"
+                name="password"
+                type="password"
+                required
+                minlength="8"
+              />
+              <div class="hint">
+                Min 8 chars, include uppercase, number & symbol
+              </div>
+              <div class="field-error" id="err_password"></div>
+            </label>
+
+            <label>
+              Full name *
+              <input id="staff_name" name="name" required />
+              <div class="field-error" id="err_name"></div>
+            </label>
+
+            <label>
+              Phone *
+              <input
+                id="staff_phone"
+                name="phone_number"
+                required
+                pattern="^[0-9]{10,15}$"
+              />
+              <div class="field-error" id="err_phone"></div>
+            </label>
+
+            <label>
+              Role *
+              <select id="staff_role" name="role" required>
+                <option value="warden">Warden</option>
+                <option value="cook">Cook</option>
+                <option value="account">Account</option>
+              </select>
+            </label>
+
+            <label class="full">
+              Address
+              <textarea id="staff_address" name="address" rows="2"></textarea>
+            </label>
+          </div>
+
+          <div class="modal-actions">
+            <button id="addStaffSubmit" class="btn" type="submit">
+              Add Staff
+            </button>
+            <button id="addStaffCancel" class="btn secondary" type="button">
+              Cancel
+            </button>
+            <div id="addStaffStatus" class="muted" aria-live="polite"></div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- CONFIRM MODAL -->
+    <div id="confirmModal" class="modal" hidden>
+      <div class="modal-card" role="dialog" aria-modal="true">
+        <h3 id="confirmTitle">Confirm</h3>
+        <p id="confirmMsg">Are you sure?</p>
+        <div class="modal-actions">
+          <button id="confirmOk" class="btn danger">Yes</button>
+          <button id="confirmCancel" class="btn secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE-IN STUDENT DETAIL PANEL -->
+    <aside id="detailPanel" class="detail-panel" aria-hidden="true">
+      <div class="detail-inner">
+        <button
+          id="detailClose"
+          class="close-btn"
+          aria-label="Close student details"
+        >
+          ✕
+        </button>
+
+        <div class="detail-header">
+          <img id="detailPhoto" class="detail-photo" alt="Student photo" />
+          <div>
+            <h3 id="detailName">—</h3>
+            <div id="detailEt" class="muted">ET: —</div>
+            <div id="detailStatus" style="margin-top: 6px"></div>
+          </div>
+        </div>
+
+        <div class="detail-body">
+          <p><strong>Email:</strong> <span id="detailEmail">—</span></p>
+          <p><strong>Phone:</strong> <span id="detailPhone">—</span></p>
+          <p><strong>Father:</strong> <span id="detailFather">—</span></p>
+          <p><strong>UTR:</strong> <span id="detailUtr">—</span></p>
+          <p><strong>Room:</strong> <span id="detailRoom">—</span></p>
+        </div>
+
+        <div class="detail-actions">
+          <button id="openEditBtn" class="btn">Edit</button>
+          <button id="approveBtn" class="btn">Approve</button>
+          <button id="deleteBtn" class="btn secondary">Delete</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- EDIT STUDENT MODAL (inline form with image upload) -->
+    <div id="editModal" class="modal" hidden>
+      <div class="modal-card" role="dialog" aria-modal="true">
+        <h3 id="editTitle">Edit Student</h3>
+        <form id="editForm" class="form" enctype="multipart/form-data">
+          <div class="form-grid">
+            <label>
+              First name
+              <input id="edit_first_name" name="first_name" required />
+            </label>
+            <label>
+              Last name
+              <input id="edit_last_name" name="last_name" required />
+            </label>
+            <label>
+              Email
+              <input
+                id="edit_email"
+                name="student_email"
+                type="email"
+                required
+              />
+            </label>
+
+            <label>
+              Phone
+              <input
+                id="edit_phone"
+                name="student_phone_number"
+                required
+                pattern="^[0-9]{7,15}$"
+              />
+            </label>
+
+            <label>
+              ET Number
+              <input id="edit_et" name="et_number" required />
+            </label>
+
+            <label class="full">
+              Photo
+              <input id="edit_image" type="file" accept="image/*" />
+              <div id="editPreview" style="margin-top: 8px"></div>
+            </label>
+          </div>
+
+          <div class="modal-actions">
+            <button id="saveEditBtn" class="btn" type="submit">Save</button>
+            <button id="cancelEditBtn" class="btn secondary" type="button">
+              Cancel
+            </button>
+            <div id="editStatus" class="muted" aria-live="polite"></div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- toast container will be created by JS -->
+
+    <script type="module" src="js/admin.js"></script>
+  </body>
+</html>
