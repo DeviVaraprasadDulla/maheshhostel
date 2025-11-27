@@ -1,34 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Warden Dashboard</title>
-  <script src="https://unpkg.com/html5-qrcode"></script>
-  <link rel="stylesheet" href="css/warden.css">
-</head>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mahesh Hostels — Warden</title>
 
-<body>
-  <h2>Warden Dashboard</h2>
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/warden.css" />
 
-  <button id="scanBtn">Scan QR</button>
-  <button id="viewStatsBtn">View Stats</button>
+    <!-- CAMERA LIBRARY (MUST LOAD BEFORE warden.js) -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
 
-  <div id="scanner" style="width:300px; margin-top:20px; display:none;"></div>
+    <!-- JS -->
+    <script src="js/warden.js" defer></script>
+  </head>
 
-  <div id="result" style="margin-top:20px;"></div>
+  <body>
+    <!-- HEADER -->
+    <header class="header">
+      <h2>Mahesh Hostels — Warden</h2>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </header>
 
+    <main class="container">
+      <!-- SCAN CARD -->
+      <section class="scan-card">
+        <h3>Scan Student QR</h3>
+        <p class="desc">
+          Tap <b>Start Scanner</b> and point the camera at the student QR code.
+        </p>
 
-<!-- Stats Modal -->
-<div id="statsModal" class="modal-overlay" style="display:none;">
-  <div class="modal-box">
-    <span class="close-btn" id="closeStatsModal">&times;</span>
+        <div class="btn-row">
+          <button id="startBtn" class="btn primary">Start Scanner</button>
+          <button id="stopBtn" class="btn danger">Stop</button>
+        </div>
 
-    <h3>Meal Stats</h3>
+        <!-- CAMERA -->
+        <div id="reader" class="camera-box"></div>
+        <p class="camera-hint">Point camera at a student QR code</p>
+      </section>
 
-    <div id="statsContent"></div>
-  </div>
-</div>
-
-  <script src="js/warden.js"></script>
-</body>
+      <!-- RESULT CARD -->
+      <section class="result-card">
+        <h3>Last Scan</h3>
+        <div id="resultBox" class="result-box">No scans yet</div>
+      </section>
+    </main>
+  </body>
 </html>

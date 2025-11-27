@@ -2,37 +2,258 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Hostel ERP — Frontend</title>
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <link rel="stylesheet" href="css/office-login.css" />
+    <title>Mahesh Hostel — Home</title>
+
+    <!-- Production CSS -->
+    <link rel="stylesheet" href="css/home.css" />
+
+    <!-- Basic metadata for SEO -->
+    <meta
+      name="description"
+      content="Mahesh Hostel — Secure, comfortable student accommodation. Bookings, facilities and student portal."
+    />
   </head>
+
   <body>
-    <div class="container center">
-      <div class="card" style="max-width: 520px; text-align: center">
-        <div class="brand" style="justify-content: center; margin-bottom: 10px">
-          <div class="logo">HE</div>
-          <div>Hostel ERP</div>
+    <!-- ===== HEADER / NAV ===== -->
+    <header class="site-header" role="banner" aria-label="Main header">
+      <div class="nav-container">
+        <div class="brand">
+          <a href="index.html" class="logo" aria-label="Mahesh Hostel home"
+            >MaheshHostel</a
+          >
         </div>
-        <h2 style="margin: 6px 0 12px">Welcome</h2>
-        <p class="small" style="margin-bottom: 18px">
-          Choose a flow to continue
-        </p>
-        <div
-          style="
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            flex-wrap: wrap;
-          "
+
+        <nav id="nav" aria-label="Main navigation">
+          <ul class="nav-list" role="menubar" aria-hidden="false">
+            <li role="none">
+              <a role="menuitem" href="#features">Features</a>
+            </li>
+            <li role="none"><a role="menuitem" href="#gallery">Gallery</a></li>
+            <li role="none"><a role="menuitem" href="#contact">Contact</a></li>
+            <li role="none">
+              <a role="menuitem" href="student-login.html">Student Login</a>
+            </li>
+            <li role="none">
+              <a role="menuitem" href="signup.html">Student Signup</a>
+            </li>
+            <li role="none">
+              <a role="menuitem" href="office-login.html" class="staff-btn"
+                >Staff Login</a
+              >
+            </li>
+          </ul>
+        </nav>
+
+        <!-- mobile toggle -->
+        <button
+          id="mobileMenuBtn"
+          aria-label="Open menu"
+          aria-expanded="false"
+          aria-controls="nav"
         >
-          <a class="btn" href="signup.html">Student Signup</a>
-          <a class="btn secondary" href="office-login.html">Office Login</a>
+          <span class="hamburger" aria-hidden="true"></span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ===== HERO / SLIDER ===== -->
+    <section
+      id="heroSlider"
+      aria-roledescription="carousel"
+      aria-label="Featured"
+    >
+      <div id="hsFrame" class="hs-frame" tabindex="0">
+        <!-- slides - use high-quality images in production -->
+        <img
+          class="hs-img"
+          data-index="0"
+          data-active="true"
+          src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1600&q=60"
+          alt="Comfortable rooms"
+          loading="lazy"
+        />
+        <img
+          class="hs-img"
+          data-index="1"
+          data-active="false"
+          src="https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?auto=format&fit=crop&w=1600&q=60"
+          alt="Study friendly spaces"
+          loading="lazy"
+        />
+        <img
+          class="hs-img"
+          data-index="2"
+          data-active="false"
+          src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1600&q=60"
+          alt="Secure campus"
+          loading="lazy"
+        />
+
+        <!-- controls -->
+        <button id="hsPrev" class="hs-arrow" aria-label="Previous slide">
+          ‹
+        </button>
+        <button id="hsNext" class="hs-arrow" aria-label="Next slide">›</button>
+
+        <!-- dots -->
+        <div id="hsDots" role="tablist" aria-label="Slide dots"></div>
+      </div>
+    </section>
+
+    <!-- ===== FEATURES ===== -->
+    <section id="features" class="features" aria-labelledby="featuresTitle">
+      <h2 id="featuresTitle">Why Mahesh Hostel?</h2>
+      <p class="hint" style="margin-top: 6px">
+        Safe, clean and student-first living — designed for study & comfort.
+      </p>
+
+      <div class="feature-grid" role="list" aria-label="Hostel features">
+        <div class="feature-card" role="listitem">
+          <img
+            src="https://images.unsplash.com/photo-1551918120-9737b10a0b04?auto=format&fit=crop&w=200&q=60"
+            alt=""
+            aria-hidden="true"
+          />
+          <h3>Comfortable Rooms</h3>
+          <p class="hint">
+            Well ventilated rooms with ergonomic study corners.
+          </p>
         </div>
-        <div class="footer small" style="margin-top: 14px">
-          This demo uses your backend endpoints. Ensure backend supports CORS
-          for this origin.
+
+        <div class="feature-card" role="listitem">
+          <img
+            src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=200&q=60"
+            alt=""
+            aria-hidden="true"
+          />
+          <h3>Safe & Secure</h3>
+          <p class="hint">24/7 security and CCTV coverage across campus.</p>
+        </div>
+
+        <div class="feature-card" role="listitem">
+          <img
+            src="https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=200&q=60"
+            alt=""
+            aria-hidden="true"
+          />
+          <h3>Nutritious Meals</h3>
+          <p class="hint">
+            Daily meals prepared with hygiene & nutrition in mind.
+          </p>
         </div>
       </div>
-    </div>
+    </section>
+
+    <!-- ===== GALLERY ===== -->
+    <section id="gallery" aria-labelledby="galleryTitle">
+      <h2 id="galleryTitle">Gallery</h2>
+      <p class="hint" style="margin-top: 6px">
+        Explore the property and amenities.
+      </p>
+
+      <div class="hostel-gallery" aria-hidden="false">
+        <img
+          src="https://picsum.photos/800/600?image=1050"
+          alt="Hostel exterior"
+          loading="lazy"
+        />
+        <img
+          src="https://picsum.photos/800/600?image=1067"
+          alt="Dining area"
+          loading="lazy"
+        />
+        <img
+          src="https://picsum.photos/800/600?image=1060"
+          alt="Study lounge"
+          loading="lazy"
+        />
+        <img
+          src="https://picsum.photos/800/600?image=1039"
+          alt="Common area"
+          loading="lazy"
+        />
+      </div>
+    </section>
+
+    <!-- ===== CONTACT / CTA ===== -->
+    <section id="contact" aria-labelledby="contactTitle">
+      <div class="contact-grid">
+        <div class="contact-card">
+          <h2 id="contactTitle">Contact / Visit Request</h2>
+          <p class="hint">
+            Have questions? Drop a message and we'll call you back.
+          </p>
+
+          <form id="contactForm" aria-label="Contact form" class="contact-form">
+            <div class="form-row">
+              <label class="field">
+                <span class="label-text">Full name</span>
+                <input
+                  id="contactName"
+                  name="name"
+                  type="text"
+                  required
+                  placeholder="Your name"
+                />
+                <div class="field-error" id="errName"></div>
+              </label>
+
+              <label class="field">
+                <span class="label-text">Phone</span>
+                <input
+                  id="contactPhone"
+                  name="phone"
+                  type="tel"
+                  required
+                  placeholder="+91 9XXXXXXXXX"
+                />
+                <div class="field-error" id="errPhone"></div>
+              </label>
+
+              <label class="field">
+                <span class="label-text">Message</span>
+                <textarea
+                  id="contactMsg"
+                  name="message"
+                  rows="4"
+                  placeholder="Short message"
+                ></textarea>
+                <div class="field-error" id="errMsg"></div>
+              </label>
+
+              <div class="form-actions">
+                <button id="contactSubmit" class="btn">Send Request</button>
+                <div id="contactStatus" class="hint"></div>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <aside class="quick-card">
+          <h3>Quick Links</h3>
+          <ul class="quick-links">
+            <li><a href="signup.html">Student Signup</a></li>
+            <li><a href="student-login.html">Student Login</a></li>
+            <li><a href="office-login.html">Staff Login</a></li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
+    <footer role="contentinfo">
+      <div class="footer-inner">
+        <div class="brand-foot">Mahesh Hostel</div>
+        <small
+          >&copy; <span id="year"></span> Mahesh Hostel — All rights
+          reserved.</small
+        >
+      </div>
+    </footer>
+
+    <!-- ===== SCRIPTS ===== -->
+    <script src="js/home.js" defer></script>
   </body>
 </html>
