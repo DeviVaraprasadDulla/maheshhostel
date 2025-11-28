@@ -54,7 +54,14 @@
     .tab-btn.active {
       background: var(--primary);
       color: white;
-    }
+    }  
+    .et-cell {
+  background: #e8f0ff;  /* light blue */
+  font-weight: 600;
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+
 
     .meta {
       display:flex;
@@ -86,7 +93,23 @@
 
     .muted { color:#6b7280; padding:12px; }
 
-    /* Responsive Table Cards */
+    /* ---------------- MODAL POPUP ---------------- */
+    #modal {
+      position: fixed;
+      left: 50%;
+      top: 20px;
+      transform: translateX(-50%);
+      background: #2563eb;
+      color: white;
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-weight: 600;
+      display: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      z-index: 9999;
+    }
+    /* ------------------------------------------------ */
+
     @media(max-width:720px){
       table, thead, tbody, tr, th, td { display:block; }
 
@@ -115,6 +138,10 @@
   </style>
 </head>
 <body>
+
+  <!-- 🔵 MODAL POPUP -->
+  <div id="modal">Marked as Present!</div>
+
   <div class="wrapper">
     <header>
       <div>
@@ -142,124 +169,167 @@
     </main>
   </div>
 
-  <script>
-    const API_URL = "https://hostel-erp-bef5.onrender.com/api/attendance/today/";
-    const tokenKey = "access_token";
+<script>
+  const API_URL = "https://hostel-erp-bef5.onrender.com/api/attendance/today/";
+  const tokenKey = "access_token";
 
-    const tabPresent = document.getElementById("tabPresent");
-    const tabAbsent = document.getElementById("tabAbsent");
-    const contentArea = document.getElementById("contentArea");
-    const countsEl = document.getElementById("counts");
+  const tabPresent = document.getElementById("tabPresent");
+  const tabAbsent = document.getElementById("tabAbsent");
+  const contentArea = document.getElementById("contentArea");
+  const countsEl = document.getElementById("counts");
+  const modal = document.getElementById("modal");
 
-    let dataStore = null;
-    let activeTab = "present";
+  let dataStore = null;
+  let activeTab = "present";
 
-    function escapeHtml(s){
-      return String(s || "").replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-    }
+  function escapeHtml(s){
+    return String(s || "").replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  }
 
-    function buildPresentTable(list){
-      if (!list.length) return `<div class="muted">No present students.</div>`;
+  /* ----------- SHOW MODAL POPUP ------------- */
+  function showModal(msg) {
+    modal.textContent = msg;
+    modal.style.display = "block";
 
-      let h = `<table><thead><tr>
-        <th>ET Number</th><th>Name</th>
-      </tr></thead><tbody>`;
+    setTimeout(() => {
+      modal.style.display = "none";
+    }, 1500);
+  }
+  /* ------------------------------------------- */
 
-      list.forEach(s => {
-        h += `<tr>
-          <td data-label="ET Number">${escapeHtml(s.et_number)}</td>
-          <td data-label="Name">${escapeHtml(s.student_name)}</td>
-        </tr>`;
+  async function markPresent(etNumber) {
+    const token = localStorage.getItem("access_token");
+    if (!token) return alert("Not logged in");
+
+    try {
+      const res = await fetch("https://hostel-erp-bef5.onrender.com/api/attendance/mark-present/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify({ et_number: etNumber })
       });
 
-      h += `</tbody></table>`;
-      return h;
+      if (res.ok) {
+        showModal("Marked as Present!");
+        load(); 
+      }
+    } catch (e) {}
+  }
+
+  function buildPresentTable(list){
+    if (!list.length) return `<div class="muted">No present students.</div>`;
+
+    let h = `<table><thead><tr>
+      <th>ET Number</th><th>Name</th>
+    </tr></thead><tbody>`;
+
+    list.forEach(s => {
+      h += `<tr>
+        <td data-label="ET Number" class="et-cell">${escapeHtml(s.et_number)}</td>
+
+
+        <td data-label="Name">${escapeHtml(s.student_name)}</td>
+      </tr>`;
+    });
+
+    h += `</tbody></table>`;
+    return h;
+  }
+
+  function buildAbsentTable(list){
+    if (!list.length) return `<div class="muted">No absent students.</div>`;
+
+    let h = `<table><thead><tr>
+      <th>ET Number</th>
+      <th>Name</th>
+      <th>Mobile</th>
+      <th>Father Mobile</th>
+      <th>Action</th>
+    </tr></thead><tbody>`;
+
+    list.forEach(s => {
+      h += `<tr>
+        <td data-label="ET Number" class="et-cell">${escapeHtml(s.et_number)}</td>
+
+        <td data-label="Name">${escapeHtml(s.student_name)}</td>
+        <td data-label="Mobile">${escapeHtml(s.mobile_number)}</td>
+        <td data-label="Father Mobile">${escapeHtml(s.father_mobile)}</td>
+        <td data-label="Action">
+          <button onclick="markPresent('${escapeHtml(s.et_number)}')" 
+            style="padding:6px 10px; background:#2563eb; color:white; border:none; border-radius:6px; cursor:pointer;">
+            Add to Present
+          </button>
+        </td>
+      </tr>`;
+    });
+
+    h += `</tbody></table>`;
+    return h;
+  }
+
+  function updateCounts(d){
+    countsEl.innerHTML = `Present: <b>${d.present_students.length}</b> | Absent: <b>${d.absent_students.length}</b>`;
+  }
+
+  function render(){
+    if (!dataStore) return;
+
+    if (activeTab === "present") {
+      contentArea.innerHTML = `<h3>Present Students</h3>` + 
+                               buildPresentTable(dataStore.present_students);
+    } else {
+      contentArea.innerHTML = `<h3>Absent Students</h3>` + 
+                               buildAbsentTable(dataStore.absent_students);
+    }
+  }
+
+  async function load(){
+    contentArea.innerHTML = "Loading...";
+
+    const token = localStorage.getItem(tokenKey);
+
+    if (!token) {
+      contentArea.innerHTML = "Not Logged In";
+      return;
     }
 
-    function buildAbsentTable(list){
-      if (!list.length) return `<div class="muted">No absent students.</div>`;
-
-      let h = `<table><thead><tr>
-        <th>ET Number</th>
-        <th>Name</th>
-        <th>Mobile</th>
-        <th>Father Mobile</th>
-      </tr></thead><tbody>`;
-
-      list.forEach(s => {
-        h += `<tr>
-          <td data-label="ET Number">${escapeHtml(s.et_number)}</td>
-          <td data-label="Name">${escapeHtml(s.student_name)}</td>
-          <td data-label="Mobile">${escapeHtml(s.mobile_number)}</td>
-          <td data-label="Father Mobile">${escapeHtml(s.father_mobile)}</td>
-        </tr>`;
+    try {
+      const res = await fetch(API_URL, {
+        headers: { "Authorization": "Bearer " + token }
       });
 
-      h += `</tbody></table>`;
-      return h;
-    }
+      const data = await res.json();
+      dataStore = data;
 
-    function updateCounts(d){
-      countsEl.innerHTML = `Present: <b>${d.present_students.length}</b> | Absent: <b>${d.absent_students.length}</b>`;
-    }
-
-    function render(){
-      if (!dataStore) return;
-
-      if (activeTab === "present") {
-        contentArea.innerHTML = `<h3>Present Students</h3>` + 
-                                 buildPresentTable(dataStore.present_students);
-      } else {
-        contentArea.innerHTML = `<h3>Absent Students</h3>` + 
-                                 buildAbsentTable(dataStore.absent_students);
-      }
-    }
-
-    async function load(){
-      contentArea.innerHTML = "Loading...";
-
-      const token = localStorage.getItem(tokenKey);
-
-      if (!token) {
-        contentArea.innerHTML = "Not Logged In";
-        return;
-      }
-
-      try {
-        const res = await fetch(API_URL, {
-          headers: { "Authorization": "Bearer " + token }
-        });
-
-        const data = await res.json();
-        dataStore = data;
-
-        updateCounts(data);
-        render();
-      } catch (e) {
-        contentArea.innerHTML = "Error loading data.";
-      }
-    }
-
-    tabPresent.onclick = () => {
-      activeTab = "present";
-      tabPresent.classList.add("active");
-      tabAbsent.classList.remove("active");
+      updateCounts(data);
       render();
-    };
+    } catch (e) {
+      contentArea.innerHTML = "Error loading data.";
+    }
+  }
 
-    tabAbsent.onclick = () => {
-      activeTab = "absent";
-      tabAbsent.classList.add("active");
-      tabPresent.classList.remove("active");
-      render();
-    };
+  tabPresent.onclick = () => {
+    activeTab = "present";
+    tabPresent.classList.add("active");
+    tabAbsent.classList.remove("active");
+    render();
+  };
 
-    document.getElementById("refreshBtn").onclick = load;
-    document.getElementById("backBtn").onclick = () => {
-      window.location.href = "attendence.html";
-    };
+  tabAbsent.onclick = () => {
+    activeTab = "absent";
+    tabAbsent.classList.add("active");
+    tabPresent.classList.remove("active");
+    render();
+  };
 
-    load();
-  </script>
+  document.getElementById("refreshBtn").onclick = load;
+  document.getElementById("backBtn").onclick = () => {
+    window.location.href = "attendence.html";
+  };
+
+  load();
+</script>
 </body>
 </html>
