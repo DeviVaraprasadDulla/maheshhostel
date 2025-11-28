@@ -1,5 +1,5 @@
 // js/admin.js
-// Admin Dashboard — enhanced: slide-in detail panel, edit student inline (image upload), Chart.js meal stats
+// Admin Dashboard — stable Chart.js, resize-safe, and general improvements
 import { apiFetch } from "./api.js";
 import { clearAuth, getRole } from "./auth.js";
 
@@ -84,11 +84,9 @@ const editPreview = $("editPreview");
 
 const mealsChartEl = $("mealsChart");
 
-let mealsChart = null;
-
 /* ------------------ State & endpoints ------------------ */
 let page = 1;
-let perPage = Number(perPageSelect.value) || 10;
+let perPage = Number(perPageSelect?.value) || 10;
 let total = 0;
 let students = [];
 let lastQuery = "";
@@ -113,20 +111,23 @@ const EDIT_PATH = (id) => `/office/student/edit/${id}/`;
 
 /* ------------------ UI helpers ------------------ */
 function showLoader() {
+  if (!loader) return;
   loader.innerHTML = `
     <div class="skeleton-row" style="width:36%"></div>
     <div style="height:10px"></div>
     <div class="skeleton-card"></div>
   `;
   loader.style.display = "block";
-  tableWrap.hidden = true;
-  emptyState.hidden = true;
+  if (tableWrap) tableWrap.hidden = true;
+  if (emptyState) emptyState.hidden = true;
 }
 function hideLoader() {
+  if (!loader) return;
   loader.style.display = "none";
 }
 
 function updatePagerInfo() {
+  if (!pagerInfo) return;
   const start = (page - 1) * perPage + 1;
   const end = Math.min(total, page * perPage);
   pagerInfo.textContent = `Showing ${start} — ${end} of ${total}`;
@@ -157,14 +158,15 @@ function exportToCsv(filename, rows) {
 
 /* ------------------ rendering ------------------ */
 function renderTableRows(items = []) {
+  if (!studentsBody) return;
   studentsBody.innerHTML = "";
   if (!items || items.length === 0) {
-    tableWrap.hidden = true;
-    emptyState.hidden = false;
+    if (tableWrap) tableWrap.hidden = true;
+    if (emptyState) emptyState.hidden = false;
     return;
   }
-  tableWrap.hidden = false;
-  emptyState.hidden = true;
+  if (tableWrap) tableWrap.hidden = false;
+  if (emptyState) emptyState.hidden = true;
 
   items.forEach((s) => {
     const tr = document.createElement("tr");
@@ -251,9 +253,9 @@ async function fetchStudents() {
 
     const pending = students.filter((s) => !s.is_verified).length;
     const verified = students.filter((s) => !!s.is_verified).length;
-    summaryTotal.textContent = total ?? "—";
-    summaryPending.textContent = pending;
-    summaryVerified.textContent = verified;
+    if (summaryTotal) summaryTotal.textContent = total ?? "—";
+    if (summaryPending) summaryPending.textContent = pending;
+    if (summaryVerified) summaryVerified.textContent = verified;
 
     // update meal chart from aggregate fields if available (backend may include summary)
     renderMealChartFromData(data);
@@ -261,8 +263,8 @@ async function fetchStudents() {
     hideLoader();
     console.error("Dashboard load error:", err);
     createToast(err?.message || "Failed to load students", { type: "error" });
-    tableWrap.hidden = true;
-    emptyState.hidden = false;
+    if (tableWrap) tableWrap.hidden = true;
+    if (emptyState) emptyState.hidden = false;
   }
 }
 
@@ -291,84 +293,96 @@ async function doDelete(studentId) {
 /* ------------------ Confirm modal ------------------ */
 function confirmAction(action, student) {
   selectedAction = { action, student };
-  confirmTitle.textContent = "Confirm";
-  confirmMsg.textContent =
-    action === "delete"
-      ? `Delete ${student.student_name}? This is irreversible.`
-      : `Change approval for ${student.student_name}?`;
-  confirmModal.hidden = false;
-  confirmOk.focus();
+  if (confirmTitle) confirmTitle.textContent = "Confirm";
+  if (confirmMsg)
+    confirmMsg.textContent =
+      action === "delete"
+        ? `Delete ${student.student_name}? This is irreversible.`
+        : `Change approval for ${student.student_name}?`;
+  if (confirmModal) confirmModal.hidden = false;
+  if (confirmOk) confirmOk.focus();
 }
-confirmCancel.onclick = () => {
-  confirmModal.hidden = true;
-  selectedAction = null;
-};
-confirmOk.onclick = async () => {
-  confirmModal.hidden = true;
-  if (!selectedAction) return;
-  const { action, student } = selectedAction;
-  selectedAction = null;
-  if (action === "delete")
-    await doDelete(student.id || student.student_id || student.pk);
-  else if (action === "approve")
-    await doApprove(student.id || student.student_id || student.pk);
-};
+if (confirmCancel)
+  confirmCancel.onclick = () => {
+    if (confirmModal) confirmModal.hidden = true;
+    selectedAction = null;
+  };
+if (confirmOk)
+  confirmOk.onclick = async () => {
+    if (confirmModal) confirmModal.hidden = true;
+    if (!selectedAction) return;
+    const { action, student } = selectedAction;
+    selectedAction = null;
+    if (action === "delete")
+      await doDelete(student.id || student.student_id || student.pk);
+    else if (action === "approve")
+      await doApprove(student.id || student.student_id || student.pk);
+  };
 
 /* ------------------ Student details panel ------------------ */
 function openStudent(s) {
   currentStudent = s;
-  detailName.textContent = s.student_name || "—";
-  detailEt.textContent = s.et_number ? `ET: ${s.et_number}` : "ET: —";
-  detailEmail.textContent = s.student_email || "—";
-  detailPhone.textContent = s.student_phone_number || "—";
-  detailFather.textContent = s.father_name || "—";
-  detailUtr.textContent = s.utr_number || "—";
-  detailRoom.textContent = s.room_type || "—";
+  if (detailName) detailName.textContent = s.student_name || "—";
+  if (detailEt)
+    detailEt.textContent = s.et_number ? `ET: ${s.et_number}` : "ET: —";
+  if (detailEmail) detailEmail.textContent = s.student_email || "—";
+  if (detailPhone) detailPhone.textContent = s.student_phone_number || "—";
+  if (detailFather) detailFather.textContent = s.father_name || "—";
+  if (detailUtr) detailUtr.textContent = s.utr_number || "—";
+  if (detailRoom) detailRoom.textContent = s.room_type || "—";
 
-  if (s.is_verified) {
-    detailStatus.innerHTML = `<span class="pill verified">Verified</span>`;
-  } else {
-    detailStatus.innerHTML = `<span class="pill pending">Pending</span>`;
+  if (detailStatus) {
+    if (s.is_verified) {
+      detailStatus.innerHTML = `<span class="pill verified">Verified</span>`;
+    } else {
+      detailStatus.innerHTML = `<span class="pill pending">Pending</span>`;
+    }
   }
 
-  if (s.student_image) {
-    detailPhoto.src = s.student_image;
-    detailPhoto.style.display = "block";
-  } else {
-    detailPhoto.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-      s.student_name || "S"
-    )}&background=efefef&color=333`;
+  if (detailPhoto) {
+    detailPhoto.src = s.student_image
+      ? s.student_image
+      : `https://ui-avatars.com/api/?name=${encodeURIComponent(
+          s.student_name || "S"
+        )}&background=efefef&color=333`;
     detailPhoto.style.display = "block";
   }
 
-  detailPanel.classList.add("open");
-  detailPanel.setAttribute("aria-hidden", "false");
+  if (detailPanel) {
+    detailPanel.classList.add("open");
+    detailPanel.setAttribute("aria-hidden", "false");
+  }
   // set actions
-  openEditBtn.onclick = () => openEditModal(s);
-  approveBtn.onclick = () => confirmAction("approve", s);
-  deleteBtn.onclick = () => confirmAction("delete", s);
+  if (openEditBtn) openEditBtn.onclick = () => openEditModal(s);
+  if (approveBtn) approveBtn.onclick = () => confirmAction("approve", s);
+  if (deleteBtn) deleteBtn.onclick = () => confirmAction("delete", s);
 }
-detailClose.onclick = () => {
-  detailPanel.classList.remove("open");
-  detailPanel.setAttribute("aria-hidden", "true");
-};
+if (detailClose) {
+  detailClose.onclick = () => {
+    detailPanel.classList.remove("open");
+    detailPanel.setAttribute("aria-hidden", "true");
+  };
+}
 
 /* ------------------ Edit modal (image upload + preview) ------------------ */
 function openEditModal(student) {
-  editStatus.textContent = "";
+  if (!editForm) return;
+  if (editStatus) editStatus.textContent = "";
   editForm.reset();
-  editPreview.innerHTML = "";
-  editModal.hidden = false;
+  if (editPreview) editPreview.innerHTML = "";
+  if (editModal) editModal.hidden = false;
 
   // prefill fields. Backend shape may differ — adapt as needed
   const nameParts = (student.student_name || "").split(" ");
-  $("edit_first_name").value = nameParts[0] || "";
-  $("edit_last_name").value = nameParts.slice(1).join(" ") || "";
-  $("edit_email").value = student.student_email || "";
-  $("edit_phone").value = student.student_phone_number || "";
-  $("edit_et").value = student.et_number || "";
+  if ($("edit_first_name")) $("edit_first_name").value = nameParts[0] || "";
+  if ($("edit_last_name"))
+    $("edit_last_name").value = nameParts.slice(1).join(" ") || "";
+  if ($("edit_email")) $("edit_email").value = student.student_email || "";
+  if ($("edit_phone"))
+    $("edit_phone").value = student.student_phone_number || "";
+  if ($("edit_et")) $("edit_et").value = student.et_number || "";
 
-  if (student.student_image) {
+  if (student.student_image && editPreview) {
     const img = document.createElement("img");
     img.src = student.student_image;
     img.style.maxWidth = "120px";
@@ -378,13 +392,15 @@ function openEditModal(student) {
   // attach save handler
   editForm.onsubmit = (ev) => saveEdit(ev, student);
 }
-cancelEditBtn.onclick = () => {
-  editModal.hidden = true;
-};
+if (cancelEditBtn)
+  cancelEditBtn.onclick = () => {
+    if (editModal) editModal.hidden = true;
+  };
 
 /* image preview */
 editImageInput?.addEventListener?.("change", (ev) => {
   const f = ev.target.files[0];
+  if (!editPreview) return;
   editPreview.innerHTML = "";
   if (!f) return;
   const img = document.createElement("img");
@@ -408,7 +424,7 @@ async function saveEdit(ev, student) {
   const file = editImageInput.files[0];
 
   if (!first || !last || !email) {
-    editStatus.textContent = "Please fill required fields.";
+    if (editStatus) editStatus.textContent = "Please fill required fields.";
     return;
   }
   formData.append("first_name", first);
@@ -418,43 +434,118 @@ async function saveEdit(ev, student) {
   formData.append("et_number", et);
   if (file) formData.append("student_image", file, file.name);
 
-  saveEditBtn.disabled = true;
-  saveEditBtn.textContent = "Saving...";
+  if (saveEditBtn) {
+    saveEditBtn.disabled = true;
+    saveEditBtn.textContent = "Saving...";
+  }
 
   try {
-    // Use existing office/student/edit/<id>/ endpoint (FormData)
     const id = student.id || student.student_id || student.pk;
     await apiFetch(EDIT_PATH(id), { method: "POST", body: formData });
     createToast("Student updated.", { type: "success" });
-    editModal.hidden = true;
+    if (editModal) editModal.hidden = true;
     await fetchStudents();
-    detailPanel.classList.remove("open");
+    if (detailPanel) detailPanel.classList.remove("open");
   } catch (err) {
     console.error("Edit failed:", err);
-    editStatus.textContent =
-      err?.data?.message || err?.message || "Update failed";
-    createToast(editStatus.textContent, { type: "error" });
+    if (editStatus)
+      editStatus.textContent =
+        err?.data?.message || err?.message || "Update failed";
+    createToast(editStatus.textContent || "Update failed", { type: "error" });
   } finally {
-    saveEditBtn.disabled = false;
-    saveEditBtn.textContent = "Save";
+    if (saveEditBtn) {
+      saveEditBtn.disabled = false;
+      saveEditBtn.textContent = "Save";
+    }
   }
 }
 
-/* ------------------ Chart rendering ------------------ */
-function renderMealChart(
+/* ------------------ Chart rendering (stable + responsive-safe) ------------------ */
+
+/**
+ * Approach:
+ * - create Chart.js once with responsive:false (avoid auto-resize thrash)
+ * - keep lastMealsHash to prevent unnecessary updates
+ * - observe container resize using ResizeObserver; throttle updates to avoid loops
+ */
+
+let mealsChart = null;
+let lastMealsHash = null;
+let resizeObserver = null;
+let resizeTimeout = null;
+
+function normalizeNumber(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? Math.max(0, Math.round(n)) : 0;
+}
+
+function renderMealChartFromData(data) {
+  const pending =
+    normalizeNumber(data?.pending_count ?? data?.pending ?? 0) || 0;
+  const breakfast =
+    normalizeNumber(data?.breakfast_count ?? data?.breakfast_taken ?? 0) || 0;
+  const lunch =
+    normalizeNumber(data?.lunch_count ?? data?.lunch_taken ?? 0) || 0;
+  const dinner =
+    normalizeNumber(data?.dinner_count ?? data?.dinner_taken ?? 0) || 0;
+
+  // fallback compute from students list if aggregates absent
+  if (!breakfast && Array.isArray(students) && students.length) {
+    const b = students.filter((s) => s.breakfast_scanned === true).length;
+    const l = students.filter((s) => s.lunch_scanned === true).length;
+    const d = students.filter((s) => s.dinner_scanned === true).length;
+    const pendingFallback = Math.max(
+      0,
+      students.length - Math.max(0, b + l + d)
+    );
+    updateMealChart(pendingFallback, b, l, d);
+    return;
+  }
+
+  updateMealChart(pending, breakfast, lunch, dinner);
+}
+
+function updateMealChart(
   pendingCount = 0,
   breakfast = 0,
   lunch = 0,
   dinner = 0
 ) {
-  const ctx = mealsChartEl.getContext("2d");
+  const payload = {
+    pending: pendingCount,
+    breakfast,
+    lunch,
+    dinner,
+  };
+  const newHash = `${payload.pending}|${payload.breakfast}|${payload.lunch}|${payload.dinner}`;
+
+  if (newHash === lastMealsHash) return;
+  lastMealsHash = newHash;
+
+  // safe canvas sizing: prefer CSS fixed size; if you want responsive, allow observer to resize
+  if (mealsChartEl) {
+    // default fixed fallback size
+    mealsChartEl.style.width = mealsChartEl.style.width || "280px";
+    mealsChartEl.style.height = mealsChartEl.style.height || "220px";
+  }
+
   const labels = ["Pending", "Breakfast taken", "Lunch taken", "Dinner taken"];
-  const data = [pendingCount, breakfast, lunch, dinner];
+  const data = [
+    payload.pending,
+    payload.breakfast,
+    payload.lunch,
+    payload.dinner,
+  ];
+
   if (mealsChart) {
     mealsChart.data.datasets[0].data = data;
     mealsChart.update();
     return;
   }
+
+  // create Chart.js instance once
+  if (!mealsChartEl) return;
+  const ctx = mealsChartEl.getContext("2d");
   mealsChart = new Chart(ctx, {
     type: "doughnut",
     data: {
@@ -468,114 +559,141 @@ function renderMealChart(
       ],
     },
     options: {
-      plugins: { legend: { position: "bottom" } },
+      responsive: false, // avoid automatic resize loops
       maintainAspectRatio: false,
+      plugins: {
+        legend: { position: "bottom" },
+      },
     },
   });
-}
 
-/* try to create chart data from backend response if available */
-function renderMealChartFromData(data) {
-  // backend may return aggregates; attempt common keys
-  const pending = data?.pending_count ?? data?.pending ?? 0;
-  const breakfast = data?.breakfast_count ?? data?.breakfast_taken ?? 0;
-  const lunch = data?.lunch_count ?? data?.lunch_taken ?? 0;
-  const dinner = data?.dinner_count ?? data?.dinner_taken ?? 0;
-
-  // fallback: compute from students list if present
-  if (!breakfast && Array.isArray(students)) {
-    const b = students.filter((s) => s.breakfast_scanned === true).length;
-    const l = students.filter((s) => s.lunch_scanned === true).length;
-    const d = students.filter((s) => s.dinner_scanned === true).length;
-    renderMealChart(pending || students.length - (b + l + d), b, l, d);
-    return;
+  // Setup resize observer (throttled) to allow safe manual resizing if container changes
+  if (typeof ResizeObserver !== "undefined" && !resizeObserver) {
+    const container = mealsChartEl.parentElement || mealsChartEl;
+    resizeObserver = new ResizeObserver(() => {
+      if (resizeTimeout) clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        // compute desired size based on container but clamp to reasonable values
+        const rect = (container &&
+          container.getBoundingClientRect &&
+          container.getBoundingClientRect()) || { width: 300, height: 220 };
+        const w = Math.max(220, Math.min(520, Math.round(rect.width * 0.9)));
+        const h = Math.max(160, Math.min(420, Math.round(rect.height * 0.7)));
+        mealsChartEl.style.width = `${w}px`;
+        mealsChartEl.style.height = `${h}px`;
+        // update chart internal size and redraw
+        if (mealsChart) {
+          mealsChart.resize();
+          mealsChart.update();
+        }
+      }, 200); // throttle 200ms
+    });
+    try {
+      resizeObserver.observe(container);
+    } catch (e) {
+      // ignore if observe fails
+    }
   }
-  renderMealChart(pending, breakfast, lunch, dinner);
 }
 
 /* ------------------ events & init ------------------ */
-prevBtn.onclick = () => {
-  if (page > 1) {
-    page--;
-    fetchStudents();
-  }
-};
-nextBtn.onclick = () => {
-  page++;
-  fetchStudents();
-};
-perPageSelect.onchange = (e) => {
-  perPage = Number(e.target.value) || 10;
-  page = 1;
-  fetchStudents();
-};
-searchBox.addEventListener("input", (ev) => {
-  lastQuery = ev.target.value.trim();
-  page = 1;
-  if (window._searchTimer) clearTimeout(window._searchTimer);
-  window._searchTimer = setTimeout(() => fetchStudents(), 450);
-});
-refreshBtn.onclick = () => fetchStudents();
-exportCsvBtn.onclick = () =>
-  exportToCsv(
-    `students-${new Date().toISOString().slice(0, 10)}.csv`,
-    students
-  );
-
-openAddStaffBtn.onclick = () => {
-  addStaffForm.reset();
-  addStaffModal.hidden = false;
-  addStaffStatus.textContent = "";
-};
-addStaffCancel.onclick = () => {
-  addStaffModal.hidden = true;
-};
-addStaffForm.addEventListener("submit", async (ev) => {
-  ev.preventDefault();
-  addStaffSubmit.disabled = true;
-  addStaffSubmit.textContent = "Adding...";
-  addStaffStatus.textContent = "";
-  const fd = new FormData(addStaffForm);
-  try {
-    // adapt endpoint if needed
-    await apiFetch("/office/staff/", { method: "POST", body: fd });
-    createToast("Staff added.", { type: "success" });
-    addStaffModal.hidden = true;
-  } catch (err) {
-    console.error(err);
-    addStaffStatus.textContent =
-      err?.data?.message || err?.message || "Failed to add staff";
-    createToast(addStaffStatus.textContent, { type: "error" });
-  } finally {
-    addStaffSubmit.disabled = false;
-    addStaffSubmit.textContent = "Add Staff";
-  }
-});
-
-approveAllBtn.onclick = async () => {
-  const pending = students.filter((s) => !s.is_verified);
-  if (!pending.length)
-    return createToast("No pending students", { type: "info" });
-  if (!confirm(`Approve ${pending.length} students?`)) return;
-  for (const s of pending) {
-    try {
-      await apiFetch(APPROVE_PATH(s.id || s.student_id || s.pk), {
-        method: "POST",
-      });
-    } catch (e) {
-      console.warn("approve failed for", s, e);
+if (prevBtn)
+  prevBtn.onclick = () => {
+    if (page > 1) {
+      page--;
+      fetchStudents();
     }
-  }
-  createToast("Bulk approve finished", { type: "success" });
-  fetchStudents();
-};
+  };
+if (nextBtn)
+  nextBtn.onclick = () => {
+    page++;
+    fetchStudents();
+  };
+if (perPageSelect)
+  perPageSelect.onchange = (e) => {
+    perPage = Number(e.target.value) || 10;
+    page = 1;
+    fetchStudents();
+  };
+if (searchBox)
+  searchBox.addEventListener("input", (ev) => {
+    lastQuery = ev.target.value.trim();
+    page = 1;
+    if (window._searchTimer) clearTimeout(window._searchTimer);
+    window._searchTimer = setTimeout(() => fetchStudents(), 450);
+  });
+if (refreshBtn) refreshBtn.onclick = () => fetchStudents();
+if (exportCsvBtn)
+  exportCsvBtn.onclick = () =>
+    exportToCsv(
+      `students-${new Date().toISOString().slice(0, 10)}.csv`,
+      students
+    );
 
-logoutBtn.onclick = () => {
-  try {
-    clearAuth();
-  } catch (e) {}
-  window.location.href = "student-login.html";
-};
+if (openAddStaffBtn) {
+  openAddStaffBtn.onclick = () => {
+    if (addStaffForm) addStaffForm.reset();
+    if (addStaffModal) addStaffModal.hidden = false;
+    if (addStaffStatus) addStaffStatus.textContent = "";
+  };
+}
+if (addStaffCancel)
+  addStaffCancel.onclick = () => {
+    if (addStaffModal) addStaffModal.hidden = true;
+  };
+if (addStaffForm)
+  addStaffForm.addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    if (!addStaffSubmit) return;
+    addStaffSubmit.disabled = true;
+    addStaffSubmit.textContent = "Adding...";
+    if (addStaffStatus) addStaffStatus.textContent = "";
+    const fd = new FormData(addStaffForm);
+    try {
+      // adapt endpoint if needed
+      await apiFetch("/office/staff/", { method: "POST", body: fd });
+      createToast("Staff added.", { type: "success" });
+      if (addStaffModal) addStaffModal.hidden = true;
+    } catch (err) {
+      console.error(err);
+      if (addStaffStatus)
+        addStaffStatus.textContent =
+          err?.data?.message || err?.message || "Failed to add staff";
+      createToast(addStaffStatus.textContent || "Failed to add staff", {
+        type: "error",
+      });
+    } finally {
+      addStaffSubmit.disabled = false;
+      addStaffSubmit.textContent = "Add Staff";
+    }
+  });
+
+if (approveAllBtn)
+  approveAllBtn.onclick = async () => {
+    const pending = students.filter((s) => !s.is_verified);
+    if (!pending.length)
+      return createToast("No pending students", { type: "info" });
+    if (!confirm(`Approve ${pending.length} students?`)) return;
+    for (const s of pending) {
+      try {
+        await apiFetch(APPROVE_PATH(s.id || s.student_id || s.pk), {
+          method: "POST",
+        });
+      } catch (e) {
+        console.warn("approve failed for", s, e);
+      }
+    }
+    createToast("Bulk approve finished", { type: "success" });
+    fetchStudents();
+  };
+
+if (logoutBtn)
+  logoutBtn.onclick = () => {
+    try {
+      clearAuth();
+    } catch (e) {}
+    window.location.href = "index.html";
+  };
 
 /* ------------------ Init ------------------ */
 (async function init() {
