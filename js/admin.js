@@ -1,10 +1,19 @@
+<<<<<<< HEAD
+// js/admin.js (FULL — optimized, fixed, and complete)
+// Admin Dashboard — optimized for large lists (500+): abortable fetches, debounced search,
+// chunked rendering, lazy avatar loading (IntersectionObserver), Chart.js reuse. 
+
+
+=======
 // js/admin.js
 // Admin Dashboard — stable Chart.js, resize-safe, and general improvements
+>>>>>>> 556639fff654c7f1ed7bb61532320c700e182ca0
 import { apiFetch } from "./api.js";
 import { clearAuth, getRole } from "./auth.js";
 
 /* ------------------ small helpers ------------------ */
 const $ = (id) => document.getElementById(id);
+const BASE_URL = import.meta.env.BASE_URL;
 
 function createToast(text, { type = "info", duration = 3500 } = {}) {
   const t = document.createElement("div");
@@ -503,7 +512,7 @@ if (detailClose) {
   };
 }
 
-/* ------------------ Edit modal (image upload + preview) ------------------ */
+
 function openEditModal(student) {
   if (!editForm) return;
   if (editStatus) editStatus.textContent = "";
@@ -648,7 +657,58 @@ function renderMealChartFromData(data) {
     return;
   }
 
+<<<<<<< HEAD
+  try {
+    const res = await fetch(`${BASE_URL}/api/owner/dashboard/`, {
+      method: "GET",
+      headers: {
+        "Authorization": "Bearer " + TOKEN
+      }
+    });
+
+    if (!res.ok) {
+      mealStatsBody.innerHTML = `<tr><td colspan='4'>Failed to load meal stats</td></tr>`;
+      return;
+    }
+
+    const data = await res.json();
+    const last7 = data?.meal_stats_last_7_days;
+
+    if (!Array.isArray(last7) || !last7.length) {
+      mealStatsBody.innerHTML = "<tr><td colspan='4'>No meal stats available</td></tr>";
+      return;
+    }
+
+    // --- Render table ---
+    mealStatsBody.innerHTML = ""; // clear previous
+    for (const day of last7) {
+  const tr = document.createElement("tr");
+
+  const dateTd = document.createElement("td");
+  dateTd.textContent = day.date || "—";
+  dateTd.setAttribute("data-label", "Date");
+
+  const breakfastTd = document.createElement("td");
+  breakfastTd.textContent = day.breakfast ?? 0;
+  breakfastTd.setAttribute("data-label", "Breakfast");
+
+  const lunchTd = document.createElement("td");
+  lunchTd.textContent = day.lunch ?? 0;
+  lunchTd.setAttribute("data-label", "Lunch");
+
+  const dinnerTd = document.createElement("td");
+  dinnerTd.textContent = day.dinner ?? 0;
+  dinnerTd.setAttribute("data-label", "Dinner");
+
+  tr.appendChild(dateTd);
+  tr.appendChild(breakfastTd);
+  tr.appendChild(lunchTd);
+  tr.appendChild(dinnerTd);
+
+  mealStatsBody.appendChild(tr);
+=======
   updateMealChart(pending, breakfast, lunch, dinner);
+>>>>>>> 556639fff654c7f1ed7bb61532320c700e182ca0
 }
 
 function updateMealChart(
