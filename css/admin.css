@@ -410,5 +410,11 @@ button {
   right: 18px;
   bottom: 20px;
   z-index: 9000;
-} 
-
+}
+/* Chart fixed size to avoid layout thrash */
+#mealsChart {
+  width: 280px !important;
+  height: 220px !important;
+  display: block;
+  max-width: none !important;
+}

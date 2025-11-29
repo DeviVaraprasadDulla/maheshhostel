@@ -1,8 +1,13 @@
+<<<<<<< HEAD
 // js/admin.js (FULL — optimized, fixed, and complete)
 // Admin Dashboard — optimized for large lists (500+): abortable fetches, debounced search,
 // chunked rendering, lazy avatar loading (IntersectionObserver), Chart.js reuse. 
 
 
+=======
+// js/admin.js
+// Admin Dashboard — stable Chart.js, resize-safe, and general improvements
+>>>>>>> 556639fff654c7f1ed7bb61532320c700e182ca0
 import { apiFetch } from "./api.js";
 import { clearAuth, getRole } from "./auth.js";
 
@@ -143,7 +148,8 @@ function hideLoader() {
 }
 
 function updatePagerInfo() {
-  const start = total === 0 ? 0 : (page - 1) * perPage + 1;
+  if (!pagerInfo) return;
+  const start = (page - 1) * perPage + 1;
   const end = Math.min(total, page * perPage);
   if (pagerInfo) pagerInfo.textContent = `Showing ${start} — ${end} of ${total}`;
 }
@@ -293,27 +299,6 @@ function renderTableRows(items = []) {
   if (tableWrap) tableWrap.hidden = false;
   if (emptyState) emptyState.hidden = true;
 
-  const batchSize = 30; // tuned for 500+; reduce if mobile is slow
-  let i = 0;
-  const observer = ensureImgObserver();
-
-  function renderBatch() {
-    const frag = document.createDocumentFragment();
-    const end = Math.min(i + batchSize, items.length);
-    for (; i < end; i++) {
-      const { tr, img } = buildRow(items[i]);
-      frag.appendChild(tr);
-      // observe img directly
-      if (img && img.datasetSrc) {
-        try {
-          observer.observe(img);
-        } catch (e) {
-          // ignore observation errors
-        }
-      }
-    }
-    studentsBody.appendChild(frag);
-
     if (i < items.length) {
       requestAnimationFrame(renderBatch);
     } else {
@@ -408,15 +393,11 @@ async function fetchStudents() {
     // non-blocking chunked render
     renderTableRows(students);
 
-    // compute summary counts in single pass (O(n))
-    let pendingCount = 0, verifiedCount = 0;
-    for (const s of students) {
-      if (s?.is_verified) verifiedCount++;
-      else pendingCount++;
-    }
-    summaryTotal.textContent = total ?? "—";
-    summaryPending.textContent = pendingCount;
-    summaryVerified.textContent = verifiedCount;
+    const pending = students.filter((s) => !s.is_verified).length;
+    const verified = students.filter((s) => !!s.is_verified).length;
+    if (summaryTotal) summaryTotal.textContent = total ?? "—";
+    if (summaryPending) summaryPending.textContent = pending;
+    if (summaryVerified) summaryVerified.textContent = verified;
 
     // update chart (prefer meal_stats_last_7_days if present)
     renderMealChartFromData(data);
@@ -461,33 +442,37 @@ async function doDelete(studentId) {
 function confirmAction(action, student) {
   selectedAction = { action, student };
   if (confirmTitle) confirmTitle.textContent = "Confirm";
-  if (confirmMsg) confirmMsg.textContent =
-    action === "delete"
-      ? `Delete ${student.student_name}? This is irreversible.`
-      : `Change approval for ${student.student_name}?`;
+  if (confirmMsg)
+    confirmMsg.textContent =
+      action === "delete"
+        ? `Delete ${student.student_name}? This is irreversible.`
+        : `Change approval for ${student.student_name}?`;
   if (confirmModal) confirmModal.hidden = false;
   if (confirmOk) confirmOk.focus();
 }
-if (confirmCancel) confirmCancel.onclick = () => {
-  if (confirmModal) confirmModal.hidden = true;
-  selectedAction = null;
-};
-if (confirmOk) confirmOk.onclick = async () => {
-  if (confirmModal) confirmModal.hidden = true;
-  if (!selectedAction) return;
-  const { action, student } = selectedAction;
-  selectedAction = null;
-  const id = normalizeId(student);
-  if (!id) return;
-  if (action === "delete") await doDelete(id);
-  else if (action === "approve") await doApprove(id);
-};
+if (confirmCancel)
+  confirmCancel.onclick = () => {
+    if (confirmModal) confirmModal.hidden = true;
+    selectedAction = null;
+  };
+if (confirmOk)
+  confirmOk.onclick = async () => {
+    if (confirmModal) confirmModal.hidden = true;
+    if (!selectedAction) return;
+    const { action, student } = selectedAction;
+    selectedAction = null;
+    if (action === "delete")
+      await doDelete(student.id || student.student_id || student.pk);
+    else if (action === "approve")
+      await doApprove(student.id || student.student_id || student.pk);
+  };
 
 /* ------------------ Student details panel ------------------ */
 function openStudent(s) {
   currentStudent = s;
   if (detailName) detailName.textContent = s.student_name || "—";
-  if (detailEt) detailEt.textContent = s.et_number ? `ET: ${s.et_number}` : "ET: —";
+  if (detailEt)
+    detailEt.textContent = s.et_number ? `ET: ${s.et_number}` : "ET: —";
   if (detailEmail) detailEmail.textContent = s.student_email || "—";
   if (detailPhone) detailPhone.textContent = s.student_phone_number || "—";
   if (detailFather) detailFather.textContent = s.father_name || "—";
@@ -495,13 +480,19 @@ function openStudent(s) {
   if (detailRoom) detailRoom.textContent = s.room_type || "—";
 
   if (detailStatus) {
-    detailStatus.innerHTML = s.is_verified
-      ? `<span class="pill verified">Verified</span>`
-      : `<span class="pill pending">Pending</span>`;
+    if (s.is_verified) {
+      detailStatus.innerHTML = `<span class="pill verified">Verified</span>`;
+    } else {
+      detailStatus.innerHTML = `<span class="pill pending">Pending</span>`;
+    }
   }
 
   if (detailPhoto) {
-    detailPhoto.src = s.student_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(s.student_name || "S")}&background=efefef&color=333`;
+    detailPhoto.src = s.student_image
+      ? s.student_image
+      : `https://ui-avatars.com/api/?name=${encodeURIComponent(
+          s.student_name || "S"
+        )}&background=efefef&color=333`;
     detailPhoto.style.display = "block";
   }
 
@@ -509,43 +500,34 @@ function openStudent(s) {
     detailPanel.classList.add("open");
     detailPanel.setAttribute("aria-hidden", "false");
   }
-
+  // set actions
   if (openEditBtn) openEditBtn.onclick = () => openEditModal(s);
   if (approveBtn) approveBtn.onclick = () => confirmAction("approve", s);
   if (deleteBtn) deleteBtn.onclick = () => confirmAction("delete", s);
 }
-if (detailClose) detailClose.onclick = () => {
-  if (detailPanel) {
+if (detailClose) {
+  detailClose.onclick = () => {
     detailPanel.classList.remove("open");
     detailPanel.setAttribute("aria-hidden", "true");
-  }
-};
+  };
+}
 
 
 function openEditModal(student) {
-  editStatus && (editStatus.textContent = "");
-  editForm && editForm.reset();
-  editPreview && (editPreview.innerHTML = "");
+  if (!editForm) return;
+  if (editStatus) editStatus.textContent = "";
+  editForm.reset();
+  if (editPreview) editPreview.innerHTML = "";
   if (editModal) editModal.hidden = false;
 
   const nameParts = (student.student_name || "").split(" ");
-  const first = nameParts[0] || "";
-  const last = nameParts.slice(1).join(" ") || "";
-  const email = student.student_email || "";
-  const phone = student.student_phone_number || "";
-  const et = student.et_number || "";
-
-  const elFirst = $("edit_first_name");
-  const elLast = $("edit_last_name");
-  const elEmail = $("edit_email");
-  const elPhone = $("edit_phone");
-  const elEt = $("edit_et");
-
-  if (elFirst) elFirst.value = first;
-  if (elLast) elLast.value = last;
-  if (elEmail) elEmail.value = email;
-  if (elPhone) elPhone.value = phone;
-  if (elEt) elEt.value = et;
+  if ($("edit_first_name")) $("edit_first_name").value = nameParts[0] || "";
+  if ($("edit_last_name"))
+    $("edit_last_name").value = nameParts.slice(1).join(" ") || "";
+  if ($("edit_email")) $("edit_email").value = student.student_email || "";
+  if ($("edit_phone"))
+    $("edit_phone").value = student.student_phone_number || "";
+  if ($("edit_et")) $("edit_et").value = student.et_number || "";
 
   if (student.student_image && editPreview) {
     const img = document.createElement("img");
@@ -558,24 +540,23 @@ function openEditModal(student) {
   // attach save handler
   if (editForm) editForm.onsubmit = (ev) => saveEdit(ev, student);
 }
-if (cancelEditBtn) cancelEditBtn.onclick = () => {
-  if (editModal) editModal.hidden = true;
-};
+if (cancelEditBtn)
+  cancelEditBtn.onclick = () => {
+    if (editModal) editModal.hidden = true;
+  };
 
 /* image preview */
-if (editImageInput?.addEventListener) {
-  editImageInput.addEventListener("change", (ev) => {
-    const f = ev.target.files[0];
-    if (!editPreview) return;
-    editPreview.innerHTML = "";
-    if (!f) return;
-    const img = document.createElement("img");
-    img.style.maxWidth = "120px";
-    img.style.borderRadius = "8px";
-    img.src = URL.createObjectURL(f);
-    editPreview.appendChild(img);
-  });
-}
+editImageInput?.addEventListener?.("change", (ev) => {
+  const f = ev.target.files[0];
+  if (!editPreview) return;
+  editPreview.innerHTML = "";
+  if (!f) return;
+  const img = document.createElement("img");
+  img.style.maxWidth = "120px";
+  img.style.borderRadius = "8px";
+  img.src = URL.createObjectURL(f);
+  editPreview.appendChild(img);
+});
 
 /* save edit */
 async function saveEdit(ev, student) {
@@ -614,8 +595,7 @@ async function saveEdit(ev, student) {
   }
 
   try {
-    const id = normalizeId(student);
-    if (!id) throw new Error("Invalid student id");
+    const id = student.id || student.student_id || student.pk;
     await apiFetch(EDIT_PATH(id), { method: "POST", body: formData });
     createToast("Student updated.", { type: "success" });
     if (editModal) editModal.hidden = true;
@@ -623,8 +603,10 @@ async function saveEdit(ev, student) {
     if (detailPanel) detailPanel.classList.remove("open");
   } catch (err) {
     console.error("Edit failed:", err);
-    if (editStatus) editStatus.textContent = err?.data?.message || err?.message || "Update failed";
-    createToast(editStatus?.textContent || "Update failed", { type: "error" });
+    if (editStatus)
+      editStatus.textContent =
+        err?.data?.message || err?.message || "Update failed";
+    createToast(editStatus.textContent || "Update failed", { type: "error" });
   } finally {
     if (saveEditBtn) {
       saveEditBtn.disabled = false;
@@ -633,20 +615,49 @@ async function saveEdit(ev, student) {
   }
 }
 
-/* ------------------ Chart rendering (last 7 days bar chart) ------------------ */
-const mealStatsBody = $("mealStatsBody");
+/* ------------------ Chart rendering (stable + responsive-safe) ------------------ */
 
-async function loadMealStats() {
-  if (!mealStatsBody) return;
+/**
+ * Approach:
+ * - create Chart.js once with responsive:false (avoid auto-resize thrash)
+ * - keep lastMealsHash to prevent unnecessary updates
+ * - observe container resize using ResizeObserver; throttle updates to avoid loops
+ */
 
-  mealStatsBody.innerHTML = "<tr><td colspan='4'>Loading...</td></tr>"; // show loading
+let mealsChart = null;
+let lastMealsHash = null;
+let resizeObserver = null;
+let resizeTimeout = null;
 
-  const TOKEN = localStorage.getItem("access_token") || localStorage.getItem("token") || "";
-  if (!TOKEN) {
-    mealStatsBody.innerHTML = "<tr><td colspan='4'>No token found</td></tr>";
+function normalizeNumber(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? Math.max(0, Math.round(n)) : 0;
+}
+
+function renderMealChartFromData(data) {
+  const pending =
+    normalizeNumber(data?.pending_count ?? data?.pending ?? 0) || 0;
+  const breakfast =
+    normalizeNumber(data?.breakfast_count ?? data?.breakfast_taken ?? 0) || 0;
+  const lunch =
+    normalizeNumber(data?.lunch_count ?? data?.lunch_taken ?? 0) || 0;
+  const dinner =
+    normalizeNumber(data?.dinner_count ?? data?.dinner_taken ?? 0) || 0;
+
+  // fallback compute from students list if aggregates absent
+  if (!breakfast && Array.isArray(students) && students.length) {
+    const b = students.filter((s) => s.breakfast_scanned === true).length;
+    const l = students.filter((s) => s.lunch_scanned === true).length;
+    const d = students.filter((s) => s.dinner_scanned === true).length;
+    const pendingFallback = Math.max(
+      0,
+      students.length - Math.max(0, b + l + d)
+    );
+    updateMealChart(pendingFallback, b, l, d);
     return;
   }
 
+<<<<<<< HEAD
   try {
     const res = await fetch(`${BASE_URL}/api/owner/dashboard/`, {
       method: "GET",
@@ -695,17 +706,99 @@ async function loadMealStats() {
   tr.appendChild(dinnerTd);
 
   mealStatsBody.appendChild(tr);
+=======
+  updateMealChart(pending, breakfast, lunch, dinner);
+>>>>>>> 556639fff654c7f1ed7bb61532320c700e182ca0
 }
 
+function updateMealChart(
+  pendingCount = 0,
+  breakfast = 0,
+  lunch = 0,
+  dinner = 0
+) {
+  const payload = {
+    pending: pendingCount,
+    breakfast,
+    lunch,
+    dinner,
+  };
+  const newHash = `${payload.pending}|${payload.breakfast}|${payload.lunch}|${payload.dinner}`;
 
-    // --- Optionally render chart ---
-    if (typeof renderMealChartFromData === "function") {
-      renderMealChartFromData(data);
+  if (newHash === lastMealsHash) return;
+  lastMealsHash = newHash;
+
+  // safe canvas sizing: prefer CSS fixed size; if you want responsive, allow observer to resize
+  if (mealsChartEl) {
+    // default fixed fallback size
+    mealsChartEl.style.width = mealsChartEl.style.width || "280px";
+    mealsChartEl.style.height = mealsChartEl.style.height || "220px";
+  }
+
+  const labels = ["Pending", "Breakfast taken", "Lunch taken", "Dinner taken"];
+  const data = [
+    payload.pending,
+    payload.breakfast,
+    payload.lunch,
+    payload.dinner,
+  ];
+
+  if (mealsChart) {
+    mealsChart.data.datasets[0].data = data;
+    mealsChart.update();
+    return;
+  }
+
+  // create Chart.js instance once
+  if (!mealsChartEl) return;
+  const ctx = mealsChartEl.getContext("2d");
+  mealsChart = new Chart(ctx, {
+    type: "doughnut",
+    data: {
+      labels,
+      datasets: [
+        {
+          data,
+          backgroundColor: ["#f97316", "#10b981", "#2563eb", "#8b5cf6"],
+          borderWidth: 0,
+        },
+      ],
+    },
+    options: {
+      responsive: false, // avoid automatic resize loops
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: "bottom" },
+      },
+    },
+  });
+
+  // Setup resize observer (throttled) to allow safe manual resizing if container changes
+  if (typeof ResizeObserver !== "undefined" && !resizeObserver) {
+    const container = mealsChartEl.parentElement || mealsChartEl;
+    resizeObserver = new ResizeObserver(() => {
+      if (resizeTimeout) clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        // compute desired size based on container but clamp to reasonable values
+        const rect = (container &&
+          container.getBoundingClientRect &&
+          container.getBoundingClientRect()) || { width: 300, height: 220 };
+        const w = Math.max(220, Math.min(520, Math.round(rect.width * 0.9)));
+        const h = Math.max(160, Math.min(420, Math.round(rect.height * 0.7)));
+        mealsChartEl.style.width = `${w}px`;
+        mealsChartEl.style.height = `${h}px`;
+        // update chart internal size and redraw
+        if (mealsChart) {
+          mealsChart.resize();
+          mealsChart.update();
+        }
+      }, 200); // throttle 200ms
+    });
+    try {
+      resizeObserver.observe(container);
+    } catch (e) {
+      // ignore if observe fails
     }
-
-  } catch (err) {
-    console.error("Meal stats fetch error:", err);
-    mealStatsBody.innerHTML = "<tr><td colspan='4'>Error loading meal stats</td></tr>";
   }
 }
 
@@ -719,87 +812,103 @@ loadMealStats();
 
 
 /* ------------------ events & init ------------------ */
-if (prevBtn) prevBtn.onclick = () => {
-  if (page > 1) {
-    page--;
-    fetchStudents();
-  }
-};
-if (nextBtn) nextBtn.onclick = () => {
-  page++;
-  fetchStudents();
-};
-if (perPageSelect) perPageSelect.onchange = (e) => {
-  perPage = Number(e.target.value) || 10;
-  page = 1;
-  fetchStudents();
-};
-
-// use debounced search
-if (searchBox) {
-  searchBox.addEventListener(
-    "input",
-    debounce((ev) => {
-      lastQuery = ev.target.value.trim();
-      page = 1;
+if (prevBtn)
+  prevBtn.onclick = () => {
+    if (page > 1) {
+      page--;
       fetchStudents();
-    }, 450)
-  );
-}
-if (refreshBtn) refreshBtn.onclick = () => fetchStudents();
-if (exportCsvBtn) exportCsvBtn.onclick = () =>
-  exportToCsv(`students-${new Date().toISOString().slice(0, 10)}.csv`, students);
-
-if (openAddStaffBtn) openAddStaffBtn.onclick = () => {
-  addStaffForm && addStaffForm.reset();
-  if (addStaffModal) addStaffModal.hidden = false;
-  if (addStaffStatus) addStaffStatus.textContent = "";
-};
-if (addStaffCancel) addStaffCancel.onclick = () => {
-  if (addStaffModal) addStaffModal.hidden = true;
-};
-if (addStaffForm) addStaffForm.addEventListener("submit", async (ev) => {
-  ev.preventDefault();
-  if (!addStaffSubmit) return;
-  addStaffSubmit.disabled = true;
-  addStaffSubmit.textContent = "Adding...";
-  if (addStaffStatus) addStaffStatus.textContent = "";
-  const fd = new FormData(addStaffForm);
-  try {
-    await apiFetch("/office/staff/", { method: "POST", body: fd });
-    createToast("Staff added.", { type: "success" });
-    if (addStaffModal) addStaffModal.hidden = true;
-  } catch (err) {
-    console.error(err);
-    if (addStaffStatus) addStaffStatus.textContent = err?.data?.message || err?.message || "Failed to add staff";
-    createToast(addStaffStatus?.textContent || "Failed to add staff", { type: "error" });
-  } finally {
-    addStaffSubmit.disabled = false;
-    addStaffSubmit.textContent = "Add Staff";
-  }
-});
-
-if (approveAllBtn) approveAllBtn.onclick = async () => {
-  const pending = students.filter((s) => !s.is_verified);
-  if (!pending.length) return createToast("No pending students", { type: "info" });
-  if (!confirm(`Approve ${pending.length} students?`)) return;
-  for (const s of pending) {
-    const id = normalizeId(s);
-    if (!id) continue;
-    try {
-      await apiFetch(APPROVE_PATH(id), { method: "POST" });
-    } catch (e) {
-      console.warn("approve failed for", s, e);
     }
-  }
-  createToast("Bulk approve finished", { type: "success" });
-  fetchStudents();
-};
+  };
+if (nextBtn)
+  nextBtn.onclick = () => {
+    page++;
+    fetchStudents();
+  };
+if (perPageSelect)
+  perPageSelect.onchange = (e) => {
+    perPage = Number(e.target.value) || 10;
+    page = 1;
+    fetchStudents();
+  };
+if (searchBox)
+  searchBox.addEventListener("input", (ev) => {
+    lastQuery = ev.target.value.trim();
+    page = 1;
+    if (window._searchTimer) clearTimeout(window._searchTimer);
+    window._searchTimer = setTimeout(() => fetchStudents(), 450);
+  });
+if (refreshBtn) refreshBtn.onclick = () => fetchStudents();
+if (exportCsvBtn)
+  exportCsvBtn.onclick = () =>
+    exportToCsv(
+      `students-${new Date().toISOString().slice(0, 10)}.csv`,
+      students
+    );
 
-if (logoutBtn) logoutBtn.onclick = () => {
-  try { clearAuth(); } catch (e) {}
-  window.location.href = "student-login.html";
-};
+if (openAddStaffBtn) {
+  openAddStaffBtn.onclick = () => {
+    if (addStaffForm) addStaffForm.reset();
+    if (addStaffModal) addStaffModal.hidden = false;
+    if (addStaffStatus) addStaffStatus.textContent = "";
+  };
+}
+if (addStaffCancel)
+  addStaffCancel.onclick = () => {
+    if (addStaffModal) addStaffModal.hidden = true;
+  };
+if (addStaffForm)
+  addStaffForm.addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    if (!addStaffSubmit) return;
+    addStaffSubmit.disabled = true;
+    addStaffSubmit.textContent = "Adding...";
+    if (addStaffStatus) addStaffStatus.textContent = "";
+    const fd = new FormData(addStaffForm);
+    try {
+      // adapt endpoint if needed
+      await apiFetch("/office/staff/", { method: "POST", body: fd });
+      createToast("Staff added.", { type: "success" });
+      if (addStaffModal) addStaffModal.hidden = true;
+    } catch (err) {
+      console.error(err);
+      if (addStaffStatus)
+        addStaffStatus.textContent =
+          err?.data?.message || err?.message || "Failed to add staff";
+      createToast(addStaffStatus.textContent || "Failed to add staff", {
+        type: "error",
+      });
+    } finally {
+      addStaffSubmit.disabled = false;
+      addStaffSubmit.textContent = "Add Staff";
+    }
+  });
+
+if (approveAllBtn)
+  approveAllBtn.onclick = async () => {
+    const pending = students.filter((s) => !s.is_verified);
+    if (!pending.length)
+      return createToast("No pending students", { type: "info" });
+    if (!confirm(`Approve ${pending.length} students?`)) return;
+    for (const s of pending) {
+      try {
+        await apiFetch(APPROVE_PATH(s.id || s.student_id || s.pk), {
+          method: "POST",
+        });
+      } catch (e) {
+        console.warn("approve failed for", s, e);
+      }
+    }
+    createToast("Bulk approve finished", { type: "success" });
+    fetchStudents();
+  };
+
+if (logoutBtn)
+  logoutBtn.onclick = () => {
+    try {
+      clearAuth();
+    } catch (e) {}
+    window.location.href = "index.html";
+  };
 
 /* ------------------ Init ------------------ */
 (async function init() {
