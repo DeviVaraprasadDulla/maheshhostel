@@ -1,13 +1,14 @@
 // js/admin.js (FULL — optimized, fixed, and complete)
 // Admin Dashboard — optimized for large lists (500+): abortable fetches, debounced search,
-// chunked rendering, lazy avatar loading (IntersectionObserver), Chart.js reuse,
-// single authorized meal-stats fetch and rendering, robust role guard.
+// chunked rendering, lazy avatar loading (IntersectionObserver), Chart.js reuse. 
+
 
 import { apiFetch } from "./api.js";
 import { clearAuth, getRole } from "./auth.js";
 
 /* ------------------ small helpers ------------------ */
 const $ = (id) => document.getElementById(id);
+const BASE_URL = import.meta.env.BASE_URL;
 
 function createToast(text, { type = "info", duration = 3500 } = {}) {
   const t = document.createElement("div");
@@ -520,7 +521,7 @@ if (detailClose) detailClose.onclick = () => {
   }
 };
 
-/* ------------------ Edit modal (image upload + preview) ------------------ */
+
 function openEditModal(student) {
   editStatus && (editStatus.textContent = "");
   editForm && editForm.reset();
@@ -647,7 +648,7 @@ async function loadMealStats() {
   }
 
   try {
-    const res = await fetch("https://hostel-erp-bef5.onrender.com/api/owner/dashboard/", {
+    const res = await fetch(`${BASE_URL}/api/owner/dashboard/`, {
       method: "GET",
       headers: {
         "Authorization": "Bearer " + TOKEN
