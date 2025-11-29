@@ -10,7 +10,21 @@
   --success: #10b981;
   --shadow: 0 8px 24px rgba(2, 6, 23, 0.06);
   --text: #0b1220;
+} 
+#mealStatsTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
 }
+#mealStatsTable th, #mealStatsTable td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+#mealStatsTable th {
+  background-color: #f3f4f6;
+}
+
 
 /* Reset */
 * {
@@ -317,8 +331,10 @@ button {
   }
   .topbar-inner {
     padding: 0 10px;
-  }
+  } 
 }
+
+
 
 /* ----------------- Detail slide panel ----------------- */
 .detail-panel {

@@ -5,6 +5,7 @@ import { clearAuth, getRole } from "./auth.js";
 
 /* ------------------ small helpers ------------------ */
 const $ = (id) => document.getElementById(id);
+
 function createToast(text, { type = "info", duration = 3500 } = {}) {
   const t = document.createElement("div");
   t.className = "toast";
@@ -16,7 +17,6 @@ function createToast(text, { type = "info", duration = 3500 } = {}) {
     t.style.background = "linear-gradient(180deg,#ef4444,#b91c1c)";
   else t.style.background = "linear-gradient(180deg,#2563eb,#1e4ecf)";
   document.body.appendChild(t);
-  // animate in
   requestAnimationFrame(() => {
     t.style.opacity = "1";
     t.style.transition = "opacity 260ms";
@@ -25,6 +25,14 @@ function createToast(text, { type = "info", duration = 3500 } = {}) {
     t.style.opacity = "0";
     setTimeout(() => t.remove(), 300);
   }, duration);
+}
+
+function debounce(fn, delay = 400) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+  };
 }
 
 /* ------------------ DOM refs ------------------ */
@@ -98,15 +106,19 @@ const APPROVE_PATH = (id) => `/office/student/approve/${id}/`;
 const DELETE_PATH = (id) => `/office/student/delete/${id}/`;
 const EDIT_PATH = (id) => `/office/student/edit/${id}/`;
 
-/* ------------------ auth guard ------------------ */
+/* ------------------ role guard ------------------ */
 (function roleGuard() {
   try {
-    const role = getRole ? getRole() : null;
+    const role = typeof getRole === "function" ? getRole() : null;
     if (role && role !== "owner" && role !== "office") {
-      clearAuth();
+      try { clearAuth(); } catch (e) {}
       window.location.href = "student-login.html";
     }
-  } catch (e) {}
+  } catch (e) {
+    console.error("Role guard error:", e);
+    try { clearAuth(); } catch (er) {}
+    window.location.href = "student-login.html";
+  }
 })();
 
 /* ------------------ UI helpers ------------------ */
@@ -130,7 +142,7 @@ function updatePagerInfo() {
   if (!pagerInfo) return;
   const start = (page - 1) * perPage + 1;
   const end = Math.min(total, page * perPage);
-  pagerInfo.textContent = `Showing ${start} — ${end} of ${total}`;
+  if (pagerInfo) pagerInfo.textContent = `Showing ${start} — ${end} of ${total}`;
 }
 
 function exportToCsv(filename, rows) {
@@ -156,7 +168,117 @@ function exportToCsv(filename, rows) {
   URL.revokeObjectURL(url);
 }
 
-/* ------------------ rendering ------------------ */
+/* ------------------ rendering (chunked + lazy imgs) ------------------ */
+
+// IntersectionObserver for lazy-loading avatars
+let imgObserver = null;
+function ensureImgObserver() {
+  if (imgObserver) return imgObserver;
+  // if tableWrap is undefined (page layout), root: null still works (viewport)
+  const rootEl = tableWrap || null;
+  imgObserver = new IntersectionObserver((entries) => {
+    for (const ent of entries) {
+      if (ent.isIntersecting) {
+        const img = ent.target;
+        const src = img.datasetSrc || img.getAttribute("data-src");
+        if (src) {
+          img.src = src;
+          img.removeAttribute("data-src");
+          img.datasetSrc = "";
+        }
+        img.loading = "lazy";
+        img.decoding = "async";
+        try {
+          imgObserver.unobserve(img);
+        } catch (e) {}
+      }
+    }
+  }, {
+    root: rootEl,
+    rootMargin: "300px",
+    threshold: 0.01
+  });
+  return imgObserver;
+}
+
+// buildRow returns { tr, img } so caller can observe img directly (avoid querySelectorAll)
+function buildRow(s) {
+  const tr = document.createElement("tr");
+
+  const photoTd = document.createElement("td");
+  const img = document.createElement("img");
+  img.className = "photo";
+  img.alt = s.student_name || "photo";
+  const avatarSrc =
+    s.student_image ||
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(
+      s.student_name || "S"
+    )}&background=efefef&color=333`;
+  img.setAttribute("data-src", avatarSrc);
+  img.datasetSrc = avatarSrc;
+  img.style.width = "40px";
+  img.style.height = "40px";
+  img.style.objectFit = "cover";
+  img.style.borderRadius = "4px";
+  img.loading = "lazy";
+  img.decoding = "async";
+  photoTd.appendChild(img);
+
+  const nameTd = document.createElement("td");
+  nameTd.textContent = s.student_name || "—";
+
+  const etTd = document.createElement("td");
+  etTd.textContent = s.et_number || "—";
+
+  const emailTd = document.createElement("td");
+  emailTd.textContent = s.student_email || "—";
+
+  const phoneTd = document.createElement("td");
+  phoneTd.textContent = s.student_phone_number || "—";
+
+  const feesTd = document.createElement("td");
+  const feesVal = s.fees_paid ?? s.fees ?? 0;
+  feesTd.textContent =
+    typeof feesVal === "number" ? feesVal.toFixed(2) : String(feesVal);
+
+  const statusTd = document.createElement("td");
+  const span = document.createElement("span");
+  span.className = "pill " + (s.is_verified ? "verified" : "pending");
+  span.textContent = s.is_verified ? "Verified" : "Pending";
+  statusTd.appendChild(span);
+
+  const actionsTd = document.createElement("td");
+  actionsTd.style.display = "flex";
+  actionsTd.style.gap = "8px";
+  const viewBtn = document.createElement("button");
+  viewBtn.className = "btn small";
+  viewBtn.textContent = "View";
+  viewBtn.onclick = () => openStudent(s);
+  const approveBtn = document.createElement("button");
+  approveBtn.className = "btn small";
+  approveBtn.textContent = s.is_verified ? "Unverify" : "Approve";
+  approveBtn.onclick = () => confirmAction("approve", s);
+  const delBtn = document.createElement("button");
+  delBtn.className = "btn small secondary";
+  delBtn.textContent = "Delete";
+  delBtn.onclick = () => confirmAction("delete", s);
+  actionsTd.appendChild(viewBtn);
+  actionsTd.appendChild(approveBtn);
+  actionsTd.appendChild(delBtn);
+
+  tr.appendChild(photoTd);
+  tr.appendChild(nameTd);
+  tr.appendChild(etTd);
+  tr.appendChild(emailTd);
+  tr.appendChild(phoneTd);
+  tr.appendChild(feesTd);
+  tr.appendChild(statusTd);
+  tr.appendChild(actionsTd);
+
+  return { tr, img };
+}
+
+// chunked render to avoid blocking main thread
 function renderTableRows(items = []) {
   if (!studentsBody) return;
   studentsBody.innerHTML = "";
@@ -168,88 +290,99 @@ function renderTableRows(items = []) {
   if (tableWrap) tableWrap.hidden = false;
   if (emptyState) emptyState.hidden = true;
 
-  items.forEach((s) => {
-    const tr = document.createElement("tr");
+    if (i < items.length) {
+      requestAnimationFrame(renderBatch);
+    } else {
+      requestAnimationFrame(() => updatePagerInfo());
+    }
+  }
 
-    const photoTd = document.createElement("td");
-    const img = document.createElement("img");
-    img.className = "photo";
-    img.alt = s.student_name || "photo";
-    img.src =
-      s.student_image ||
-      `https://ui-avatars.com/api/?name=${encodeURIComponent(
-        s.student_name || "S"
-      )}&background=efefef&color=333`;
-    photoTd.appendChild(img);
-
-    const nameTd = document.createElement("td");
-    nameTd.textContent = s.student_name || "—";
-    const etTd = document.createElement("td");
-    etTd.textContent = s.et_number || "—";
-    const emailTd = document.createElement("td");
-    emailTd.textContent = s.student_email || "—";
-    const phoneTd = document.createElement("td");
-    phoneTd.textContent = s.student_phone_number || "—";
-    const feesTd = document.createElement("td");
-    const feesVal = s.fees_paid ?? s.fees ?? 0;
-    feesTd.textContent =
-      typeof feesVal === "number" ? feesVal.toFixed(2) : String(feesVal);
-
-    const statusTd = document.createElement("td");
-    const span = document.createElement("span");
-    span.className = "pill " + (s.is_verified ? "verified" : "pending");
-    span.textContent = s.is_verified ? "Verified" : "Pending";
-    statusTd.appendChild(span);
-
-    const actionsTd = document.createElement("td");
-    actionsTd.style.display = "flex";
-    actionsTd.style.gap = "8px";
-    const viewBtn = document.createElement("button");
-    viewBtn.className = "btn small";
-    viewBtn.textContent = "View";
-    viewBtn.onclick = () => openStudent(s);
-    const approveBtn = document.createElement("button");
-    approveBtn.className = "btn small";
-    approveBtn.textContent = s.is_verified ? "Unverify" : "Approve";
-    approveBtn.onclick = () => confirmAction("approve", s);
-    const delBtn = document.createElement("button");
-    delBtn.className = "btn small secondary";
-    delBtn.textContent = "Delete";
-    delBtn.onclick = () => confirmAction("delete", s);
-    actionsTd.appendChild(viewBtn);
-    actionsTd.appendChild(approveBtn);
-    actionsTd.appendChild(delBtn);
-
-    tr.appendChild(photoTd);
-    tr.appendChild(nameTd);
-    tr.appendChild(etTd);
-    tr.appendChild(emailTd);
-    tr.appendChild(phoneTd);
-    tr.appendChild(feesTd);
-    tr.appendChild(statusTd);
-    tr.appendChild(actionsTd);
-
-    studentsBody.appendChild(tr);
-  });
+  requestAnimationFrame(renderBatch);
 }
 
-/* ------------------ API calls ------------------ */
+/* ------------------ API calls (abortable + safe) ------------------ */
+
+// separate controllers for list vs other operations
+let currentFetchController = null;
+
+async function fetchWithAbort(url, options = {}, controllerRef = "list") {
+  // controllerRef can be "list" or any other key to allow multiple controllers if needed.
+  if (controllerRef === "list") {
+    if (currentFetchController) {
+      try { currentFetchController.abort(); } catch (e) {}
+    }
+    currentFetchController = new AbortController();
+    const opts = { ...options, signal: currentFetchController.signal };
+    return apiFetch(url, opts);
+  } else {
+    const c = new AbortController();
+    const opts = { ...options, signal: c.signal };
+    return apiFetch(url, opts);
+  }
+}
+
+function normalizeId(s) {
+  return s?.id ?? s?.student_id ?? s?.pk ?? s?.user_id ?? null;
+}
+
+let mealsChart = null;
+
+function renderMealChartFromData(data) {
+  if (!mealsChartEl) return;
+
+  const last7 = data?.meal_stats_last_7_days || [];
+  const labels = last7.map(d => d.date || "—");
+  const breakfast = last7.map(d => d.breakfast || 0);
+  const lunch = last7.map(d => d.lunch || 0);
+  const dinner = last7.map(d => d.dinner || 0);
+
+  const chartData = {
+    labels,
+    datasets: [
+      { label: "Breakfast", data: breakfast, backgroundColor: "#10b981" },
+      { label: "Lunch", data: lunch, backgroundColor: "#3b82f6" },
+      { label: "Dinner", data: dinner, backgroundColor: "#f59e0b" },
+    ],
+  };
+
+  const config = {
+    type: "bar",
+    data: chartData,
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: "top" },
+        title: { display: true, text: "Meals Last 7 Days" },
+      },
+    },
+  };
+
+  if (mealsChart) {
+    mealsChart.destroy();
+  }
+  mealsChart = new Chart(mealsChartEl, config);
+}
+
+
+
 async function fetchStudents() {
   showLoader();
   try {
     const query = lastQuery
       ? `?q=${encodeURIComponent(lastQuery)}&page=${page}&per_page=${perPage}`
       : `?page=${page}&per_page=${perPage}`;
-    const data = await apiFetch(DASHBOARD_PATH + query, { method: "GET" });
+    const data = await fetchWithAbort(DASHBOARD_PATH + query, { method: "GET" });
+
+    // backend may return { students: [...], count: N, ... } or { results: [...] }
     const results = data?.results || data?.students || data?.data || data || [];
     total =
       data?.count ??
       data?.total ??
       (Array.isArray(results) ? results.length : 0);
     students = Array.isArray(results) ? results : [];
+
+    // non-blocking chunked render
     renderTableRows(students);
-    updatePagerInfo();
-    hideLoader();
 
     const pending = students.filter((s) => !s.is_verified).length;
     const verified = students.filter((s) => !!s.is_verified).length;
@@ -257,10 +390,16 @@ async function fetchStudents() {
     if (summaryPending) summaryPending.textContent = pending;
     if (summaryVerified) summaryVerified.textContent = verified;
 
-    // update meal chart from aggregate fields if available (backend may include summary)
+    // update chart (prefer meal_stats_last_7_days if present)
     renderMealChartFromData(data);
+   
+    hideLoader();
   } catch (err) {
     hideLoader();
+    if (err && err.name === "AbortError") {
+      // request aborted due to newer fetch - ignore
+      return;
+    }
     console.error("Dashboard load error:", err);
     createToast(err?.message || "Failed to load students", { type: "error" });
     if (tableWrap) tableWrap.hidden = true;
@@ -372,7 +511,6 @@ function openEditModal(student) {
   if (editPreview) editPreview.innerHTML = "";
   if (editModal) editModal.hidden = false;
 
-  // prefill fields. Backend shape may differ — adapt as needed
   const nameParts = (student.student_name || "").split(" ");
   if ($("edit_first_name")) $("edit_first_name").value = nameParts[0] || "";
   if ($("edit_last_name"))
@@ -389,8 +527,9 @@ function openEditModal(student) {
     img.style.borderRadius = "8px";
     editPreview.appendChild(img);
   }
+
   // attach save handler
-  editForm.onsubmit = (ev) => saveEdit(ev, student);
+  if (editForm) editForm.onsubmit = (ev) => saveEdit(ev, student);
 }
 if (cancelEditBtn)
   cancelEditBtn.onclick = () => {
@@ -415,18 +554,25 @@ async function saveEdit(ev, student) {
   ev.preventDefault();
   if (!student) return;
 
-  const formData = new FormData();
-  const first = $("edit_first_name").value.trim();
-  const last = $("edit_last_name").value.trim();
-  const email = $("edit_email").value.trim();
-  const phone = $("edit_phone").value.trim();
-  const et = $("edit_et").value.trim();
-  const file = editImageInput.files[0];
+  const firstEl = $("edit_first_name");
+  const lastEl = $("edit_last_name");
+  const emailEl = $("edit_email");
+  const phoneEl = $("edit_phone");
+  const etEl = $("edit_et");
+
+  const first = firstEl?.value.trim() || "";
+  const last = lastEl?.value.trim() || "";
+  const email = emailEl?.value.trim() || "";
+  const phone = phoneEl?.value.trim() || "";
+  const et = etEl?.value.trim() || "";
+  const file = editImageInput?.files?.[0];
 
   if (!first || !last || !email) {
     if (editStatus) editStatus.textContent = "Please fill required fields.";
     return;
   }
+
+  const formData = new FormData();
   formData.append("first_name", first);
   formData.append("last_name", last);
   formData.append("student_email", email);
@@ -596,6 +742,15 @@ function updateMealChart(
   }
 }
 
+// Call this once when page loads
+loadMealStats();
+
+
+
+
+
+
+
 /* ------------------ events & init ------------------ */
 if (prevBtn)
   prevBtn.onclick = () => {
@@ -699,7 +854,10 @@ if (logoutBtn)
 (async function init() {
   showLoader();
   try {
+    // fetch list (which will also call renderMealChartFromData if backend returned it)
     await fetchStudents();
+    // ensure meal stats are loaded separately (authorized call)
+    await loadMealStats();
   } catch (e) {
     console.error(e);
     createToast("Failed to initialize", { type: "error" });
