@@ -109,15 +109,22 @@
             </ul>
           </div>
 
-          <div style="margin-top: 18px">
-            <strong>Meal Stats (Today)</strong>
-            <canvas
-              id="mealsChart"
-              width="280"
-              height="220"
-              aria-label="Meal chart"
-            ></canvas>
-          </div>
+        <div id="mealStatsTableContainer">
+  <table id="mealStatsTable">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Breakfast</th>
+        <th>Lunch</th>
+        <th>Dinner</th>
+      </tr>
+    </thead>
+    <tbody id="mealStatsBody">
+      <!-- rows will be inserted dynamically -->
+    </tbody>
+  </table>
+</div>
+
         </div>
       </section>
     </main>
